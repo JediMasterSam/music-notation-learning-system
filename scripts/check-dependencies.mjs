@@ -61,7 +61,7 @@ async function sourceFiles(directory) {
   for (const entry of entries) {
     const path = join(directory, entry.name);
     if (entry.isDirectory()) files.push(...(await sourceFiles(path)));
-    else if (entry.name.endsWith(".ts")) files.push(path);
+    else if (entry.name.endsWith(".ts") && !entry.name.endsWith(".test.ts")) files.push(path);
   }
   return files;
 }

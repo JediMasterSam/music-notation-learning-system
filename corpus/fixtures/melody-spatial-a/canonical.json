@@ -1,0 +1,193 @@
+{
+  "documentType": "music-notation-learning-system",
+  "schemaVersion": "0.1.0",
+  "id": "document.melody-spatial-a",
+  "song": {
+    "id": "song.melody-spatial-a",
+    "title": "Synthetic Spatial Melody A"
+  },
+  "arrangements": [
+    {
+      "id": "arrangement.melody-spatial-a",
+      "songRef": "song.melody-spatial-a",
+      "title": "Exact primary-line phrase",
+      "meterMap": [
+        {
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "numerator": 4,
+          "denominator": 4
+        }
+      ],
+      "measures": [
+        {
+          "id": "measure.melody-spatial-a.pickup",
+          "ordinal": 0,
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 1, "denominator": 1 } },
+          "displayNumber": "pickup",
+          "pickup": true
+        },
+        {
+          "id": "measure.melody-spatial-a.1",
+          "ordinal": 1,
+          "start": { "beat": { "numerator": 1, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 4, "denominator": 1 } },
+          "displayNumber": "1"
+        }
+      ],
+      "roles": [
+        { "id": "role.melody-spatial-a.primary", "kind": "primary-line", "label": "Primary line" }
+      ],
+      "sections": [
+        {
+          "id": "section.melody-spatial-a.phrase",
+          "label": "Complete phrase",
+          "type": "phrase",
+          "span": {
+            "start": { "beat": { "numerator": 0, "denominator": 1 } },
+            "duration": { "beats": { "numerator": 5, "denominator": 1 } }
+          },
+          "order": 0,
+          "ideaRefs": ["idea.melody-spatial-a.opening", "idea.melody-spatial-a.answer"]
+        }
+      ],
+      "ideas": [
+        {
+          "id": "idea.melody-spatial-a.opening",
+          "span": {
+            "start": { "beat": { "numerator": 0, "denominator": 1 } },
+            "duration": { "beats": { "numerator": 2, "denominator": 1 } }
+          },
+          "roleRefs": ["role.melody-spatial-a.primary"],
+          "eventRefs": [
+            "event.melody-spatial-a.1",
+            "event.melody-spatial-a.2",
+            "event.melody-spatial-a.3"
+          ]
+        },
+        {
+          "id": "idea.melody-spatial-a.answer",
+          "span": {
+            "start": { "beat": { "numerator": 2, "denominator": 1 } },
+            "duration": { "beats": { "numerator": 3, "denominator": 1 } }
+          },
+          "roleRefs": ["role.melody-spatial-a.primary"],
+          "eventRefs": [
+            "event.melody-spatial-a.4",
+            "event.melody-spatial-a.5",
+            "event.melody-spatial-a.6"
+          ]
+        }
+      ],
+      "events": [
+        {
+          "id": "event.melody-spatial-a.1",
+          "type": "note",
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 1, "denominator": 2 } },
+          "roleRefs": ["role.melody-spatial-a.primary"],
+          "specificity": "required",
+          "pitch": {
+            "state": "required",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "C", "alter": 0, "octave": 4 }
+            }
+          }
+        },
+        {
+          "id": "event.melody-spatial-a.2",
+          "type": "note",
+          "start": { "beat": { "numerator": 1, "denominator": 2 } },
+          "duration": { "beats": { "numerator": 1, "denominator": 2 } },
+          "roleRefs": ["role.melody-spatial-a.primary"],
+          "specificity": "suggested",
+          "pitch": {
+            "state": "suggested",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "C", "alter": 0, "octave": 4 }
+            }
+          }
+        },
+        {
+          "id": "event.melody-spatial-a.3",
+          "type": "note",
+          "start": { "beat": { "numerator": 1, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 1, "denominator": 1 } },
+          "roleRefs": ["role.melody-spatial-a.primary"],
+          "specificity": "optional",
+          "pitch": {
+            "state": "optional",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "D", "alter": 0, "octave": 4 }
+            }
+          }
+        },
+        {
+          "id": "event.melody-spatial-a.4",
+          "type": "note",
+          "start": { "beat": { "numerator": 2, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 3, "denominator": 2 } },
+          "roleRefs": ["role.melody-spatial-a.primary"],
+          "specificity": "required",
+          "pitch": {
+            "state": "required",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "G", "alter": 0, "octave": 4 }
+            }
+          }
+        },
+        {
+          "id": "event.melody-spatial-a.5",
+          "type": "note",
+          "start": { "beat": { "numerator": 7, "denominator": 2 } },
+          "duration": { "beats": { "numerator": 1, "denominator": 2 } },
+          "roleRefs": ["role.melody-spatial-a.primary"],
+          "specificity": "required",
+          "pitch": {
+            "state": "required",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "E", "alter": 0, "octave": 4 }
+            }
+          }
+        },
+        {
+          "id": "event.melody-spatial-a.6",
+          "type": "note",
+          "start": { "beat": { "numerator": 4, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 1, "denominator": 1 } },
+          "roleRefs": ["role.melody-spatial-a.primary"],
+          "specificity": "required",
+          "pitch": {
+            "state": "required",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "C", "alter": 0, "octave": 4 }
+            }
+          }
+        }
+      ],
+      "duration": { "beats": { "numerator": 5, "denominator": 1 } }
+    }
+  ],
+  "sourceRegister": [
+    {
+      "id": "source.melody-spatial-a",
+      "status": "synthetic",
+      "repositoryUsePermitted": true,
+      "sourceReference": "Created for MNLS Sprint 1",
+      "behaviors": ["exact melody", "controlled treatment comparison", "learning ideas"],
+      "limitations": ["Synthetic monophonic phrase; no learning-effectiveness claim"]
+    }
+  ]
+}

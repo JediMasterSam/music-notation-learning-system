@@ -1,0 +1,200 @@
+{
+  "documentType": "music-notation-learning-system",
+  "schemaVersion": "0.1.0",
+  "id": "document.contract-voicing-hints",
+  "song": { "id": "song.contract-voicing-hints", "title": "Synthetic Voicing and Hint Contract" },
+  "arrangements": [
+    {
+      "id": "arrangement.contract-voicing-hints",
+      "songRef": "song.contract-voicing-hints",
+      "meterMap": [
+        {
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "numerator": 4,
+          "denominator": 4
+        }
+      ],
+      "measures": [
+        {
+          "id": "measure.contract-voicing-hints.1",
+          "ordinal": 0,
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 4, "denominator": 1 } }
+        }
+      ],
+      "roles": [
+        { "id": "role.contract-voicing-hints.harmony", "kind": "harmony" },
+        { "id": "role.contract-voicing-hints.bass", "kind": "bass" }
+      ],
+      "sections": [
+        {
+          "id": "section.contract-voicing-hints.contract",
+          "span": {
+            "start": { "beat": { "numerator": 0, "denominator": 1 } },
+            "duration": { "beats": { "numerator": 4, "denominator": 1 } }
+          },
+          "order": 0,
+          "ideaRefs": ["idea.contract-voicing-hints.contract"]
+        }
+      ],
+      "ideas": [
+        {
+          "id": "idea.contract-voicing-hints.contract",
+          "span": {
+            "start": { "beat": { "numerator": 0, "denominator": 1 } },
+            "duration": { "beats": { "numerator": 4, "denominator": 1 } }
+          },
+          "roleRefs": ["role.contract-voicing-hints.harmony", "role.contract-voicing-hints.bass"],
+          "eventRefs": ["event.contract-voicing-hints.am7", "event.contract-voicing-hints.c-over-g"]
+        }
+      ],
+      "events": [
+        {
+          "id": "event.contract-voicing-hints.am7",
+          "type": "chord",
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 2, "denominator": 1 } },
+          "roleRefs": ["role.contract-voicing-hints.harmony", "role.contract-voicing-hints.bass"],
+          "harmony": {
+            "root": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "A", "alter": 0 }
+            },
+            "quality": {
+              "vocabularyId": "mnls.chord-quality",
+              "vocabularyVersion": "1.0.0",
+              "qualityId": "minor"
+            },
+            "extensions": [7]
+          },
+          "inversion": {
+            "state": "required",
+            "value": { "kind": "chord-member-lowest", "chordDegree": 1 }
+          },
+          "slashBass": {
+            "state": "required",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "A", "alter": 0 }
+            }
+          },
+          "voicing": {
+            "state": "required",
+            "value": {
+              "pitches": {
+                "state": "required",
+                "value": [
+                  {
+                    "strategy": "spelled-pitch",
+                    "version": "1",
+                    "value": { "step": "C", "alter": 0, "octave": 4 }
+                  },
+                  {
+                    "strategy": "spelled-pitch",
+                    "version": "1",
+                    "value": { "step": "E", "alter": 0, "octave": 4 }
+                  },
+                  {
+                    "strategy": "spelled-pitch",
+                    "version": "1",
+                    "value": { "step": "G", "alter": 0, "octave": 4 }
+                  }
+                ]
+              },
+              "roleRefs": ["role.contract-voicing-hints.harmony"]
+            }
+          },
+          "hints": [
+            {
+              "id": "hint.contract-voicing-hints.c-over-a",
+              "type": "familiar-shape",
+              "source": "authored",
+              "upperStructure": {
+                "root": {
+                  "strategy": "spelled-pitch",
+                  "version": "1",
+                  "value": { "step": "C", "alter": 0 }
+                },
+                "quality": {
+                  "vocabularyId": "mnls.chord-quality",
+                  "vocabularyVersion": "1.0.0",
+                  "qualityId": "major"
+                }
+              },
+              "bass": {
+                "strategy": "spelled-pitch",
+                "version": "1",
+                "value": { "step": "A", "alter": 0 }
+              },
+              "equivalence": "exact-pitch-class-set",
+              "status": "active"
+            }
+          ],
+          "analysisAnnotations": [
+            {
+              "id": "annotation.contract-voicing-hints.analysis",
+              "text": "vi7 or tonic-color depending on context; do not parse",
+              "system": "free-form",
+              "tags": ["annotation-only", "V7/V maybe"],
+              "authority": "annotation"
+            }
+          ]
+        },
+        {
+          "id": "event.contract-voicing-hints.c-over-g",
+          "type": "chord",
+          "start": { "beat": { "numerator": 2, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 2, "denominator": 1 } },
+          "roleRefs": ["role.contract-voicing-hints.harmony", "role.contract-voicing-hints.bass"],
+          "harmony": {
+            "root": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "C", "alter": 0 }
+            },
+            "quality": {
+              "vocabularyId": "mnls.chord-quality",
+              "vocabularyVersion": "1.0.0",
+              "qualityId": "major"
+            }
+          },
+          "inversion": {
+            "state": "intentionally-unspecified",
+            "reason": "slash bass is independent"
+          },
+          "slashBass": {
+            "state": "required",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "G", "alter": 0 }
+            }
+          },
+          "voicing": {
+            "state": "intentionally-unspecified",
+            "reason": "no upper voicing prescribed"
+          }
+        }
+      ],
+      "duration": { "beats": { "numerator": 4, "denominator": 1 } }
+    }
+  ],
+  "sourceRegister": [
+    {
+      "id": "source.contract-voicing-hints",
+      "status": "analytical-fixture",
+      "repositoryUsePermitted": true,
+      "sourceReference": "Synthetic chord contract for MNLS Sprint 1",
+      "behaviors": [
+        "controlled chord quality",
+        "inversion and slash-bass independence",
+        "required and unspecified voicing",
+        "Am7 C/A exact hint",
+        "annotation-only analysis"
+      ],
+      "limitations": ["Contract fixture; not a complete harmonic progression"]
+    }
+  ]
+}

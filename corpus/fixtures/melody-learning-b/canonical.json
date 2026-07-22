@@ -1,0 +1,138 @@
+{
+  "documentType": "music-notation-learning-system",
+  "schemaVersion": "0.1.0",
+  "id": "document.melody-learning-b",
+  "song": { "id": "song.melody-learning-b", "title": "Synthetic Learning Melody B" },
+  "arrangements": [
+    {
+      "id": "arrangement.melody-learning-b",
+      "songRef": "song.melody-learning-b",
+      "meterMap": [
+        {
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "numerator": 4,
+          "denominator": 4
+        }
+      ],
+      "measures": [
+        {
+          "id": "measure.melody-learning-b.1",
+          "ordinal": 0,
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 4, "denominator": 1 } },
+          "displayNumber": "1"
+        }
+      ],
+      "roles": [{ "id": "role.melody-learning-b.primary", "kind": "primary-line" }],
+      "sections": [
+        {
+          "id": "section.melody-learning-b.phrase",
+          "label": "Learning phrase",
+          "span": {
+            "start": { "beat": { "numerator": 0, "denominator": 1 } },
+            "duration": { "beats": { "numerator": 4, "denominator": 1 } }
+          },
+          "order": 0,
+          "ideaRefs": ["idea.melody-learning-b.call", "idea.melody-learning-b.response"]
+        }
+      ],
+      "ideas": [
+        {
+          "id": "idea.melody-learning-b.call",
+          "span": {
+            "start": { "beat": { "numerator": 0, "denominator": 1 } },
+            "duration": { "beats": { "numerator": 2, "denominator": 1 } }
+          },
+          "roleRefs": ["role.melody-learning-b.primary"],
+          "eventRefs": [
+            "event.melody-learning-b.1",
+            "event.melody-learning-b.2",
+            "event.melody-learning-b.3"
+          ]
+        },
+        {
+          "id": "idea.melody-learning-b.response",
+          "span": {
+            "start": { "beat": { "numerator": 2, "denominator": 1 } },
+            "duration": { "beats": { "numerator": 2, "denominator": 1 } }
+          },
+          "roleRefs": ["role.melody-learning-b.primary"],
+          "eventRefs": ["event.melody-learning-b.4"]
+        }
+      ],
+      "events": [
+        {
+          "id": "event.melody-learning-b.1",
+          "type": "note",
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 1, "denominator": 1 } },
+          "roleRefs": ["role.melody-learning-b.primary"],
+          "pitch": {
+            "state": "required",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "F", "alter": 0, "octave": 4 }
+            }
+          }
+        },
+        {
+          "id": "event.melody-learning-b.2",
+          "type": "note",
+          "start": { "beat": { "numerator": 1, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 1, "denominator": 2 } },
+          "roleRefs": ["role.melody-learning-b.primary"],
+          "pitch": {
+            "state": "required",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "A", "alter": 0, "octave": 4 }
+            }
+          }
+        },
+        {
+          "id": "event.melody-learning-b.3",
+          "type": "note",
+          "start": { "beat": { "numerator": 3, "denominator": 2 } },
+          "duration": { "beats": { "numerator": 1, "denominator": 2 } },
+          "roleRefs": ["role.melody-learning-b.primary"],
+          "pitch": {
+            "state": "required",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "G", "alter": 0, "octave": 4 }
+            }
+          }
+        },
+        {
+          "id": "event.melody-learning-b.4",
+          "type": "note",
+          "start": { "beat": { "numerator": 2, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 2, "denominator": 1 } },
+          "roleRefs": ["role.melody-learning-b.primary"],
+          "pitch": {
+            "state": "required",
+            "value": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "F", "alter": 0, "octave": 4 }
+            }
+          }
+        }
+      ],
+      "duration": { "beats": { "numerator": 4, "denominator": 1 } }
+    }
+  ],
+  "sourceRegister": [
+    {
+      "id": "source.melody-learning-b",
+      "status": "synthetic",
+      "repositoryUsePermitted": true,
+      "sourceReference": "Created for MNLS Sprint 1",
+      "behaviors": ["second exact melody", "learning transformation reuse"],
+      "limitations": ["Synthetic monophonic phrase"]
+    }
+  ]
+}

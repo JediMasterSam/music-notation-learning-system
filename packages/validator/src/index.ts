@@ -1,2 +1,1 @@
-/** Public boundary for @mnls/validator. */
-export {};
+export { validateCanonicalSemantics } from "./canonical.js";

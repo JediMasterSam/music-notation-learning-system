@@ -1,0 +1,155 @@
+{
+  "documentType": "music-notation-learning-system",
+  "schemaVersion": "0.1.0",
+  "id": "document.harmony-grid-c",
+  "song": { "id": "song.harmony-grid-c", "title": "Synthetic Harmony Grid C" },
+  "arrangements": [
+    {
+      "id": "arrangement.harmony-grid-c",
+      "songRef": "song.harmony-grid-c",
+      "meterMap": [
+        {
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "numerator": 4,
+          "denominator": 4
+        }
+      ],
+      "measures": [
+        {
+          "id": "measure.harmony-grid-c.1",
+          "ordinal": 0,
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 4, "denominator": 1 } },
+          "displayNumber": "1"
+        },
+        {
+          "id": "measure.harmony-grid-c.2",
+          "ordinal": 1,
+          "start": { "beat": { "numerator": 4, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 4, "denominator": 1 } },
+          "displayNumber": "2"
+        }
+      ],
+      "roles": [{ "id": "role.harmony-grid-c.harmony", "kind": "harmony" }],
+      "sections": [
+        {
+          "id": "section.harmony-grid-c.form",
+          "label": "Repeated harmonic idea",
+          "span": {
+            "start": { "beat": { "numerator": 0, "denominator": 1 } },
+            "duration": { "beats": { "numerator": 8, "denominator": 1 } }
+          },
+          "order": 0,
+          "ideaRefs": ["idea.harmony-grid-c.source"]
+        }
+      ],
+      "ideas": [
+        {
+          "id": "idea.harmony-grid-c.source",
+          "span": {
+            "start": { "beat": { "numerator": 0, "denominator": 1 } },
+            "duration": { "beats": { "numerator": 4, "denominator": 1 } }
+          },
+          "roleRefs": ["role.harmony-grid-c.harmony"],
+          "eventRefs": ["event.harmony-grid-c.tonic", "event.harmony-grid-c.dominant"]
+        }
+      ],
+      "events": [
+        {
+          "id": "event.harmony-grid-c.tonic",
+          "type": "chord",
+          "start": { "beat": { "numerator": 0, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 2, "denominator": 1 } },
+          "roleRefs": ["role.harmony-grid-c.harmony"],
+          "harmony": {
+            "root": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "C", "alter": 0 }
+            },
+            "quality": {
+              "vocabularyId": "mnls.chord-quality",
+              "vocabularyVersion": "1.0.0",
+              "qualityId": "major"
+            }
+          },
+          "voicing": { "state": "intentionally-unspecified", "reason": "harmonic timing fixture" }
+        },
+        {
+          "id": "event.harmony-grid-c.dominant",
+          "type": "chord",
+          "start": { "beat": { "numerator": 2, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 2, "denominator": 1 } },
+          "roleRefs": ["role.harmony-grid-c.harmony"],
+          "harmony": {
+            "root": {
+              "strategy": "spelled-pitch",
+              "version": "1",
+              "value": { "step": "G", "alter": 0 }
+            },
+            "quality": {
+              "vocabularyId": "mnls.chord-quality",
+              "vocabularyVersion": "1.0.0",
+              "qualityId": "dominant-seventh"
+            }
+          },
+          "voicing": { "state": "intentionally-unspecified", "reason": "harmonic timing fixture" }
+        }
+      ],
+      "repetitions": [
+        {
+          "id": "repetition.harmony-grid-c.second-pass",
+          "sourceRef": "idea.harmony-grid-c.source",
+          "start": { "beat": { "numerator": 4, "denominator": 1 } },
+          "duration": { "beats": { "numerator": 4, "denominator": 1 } },
+          "count": 1,
+          "variationRefs": ["variation.harmony-grid-c.ending"]
+        }
+      ],
+      "variations": [
+        {
+          "id": "variation.harmony-grid-c.ending",
+          "sourceRef": "idea.harmony-grid-c.source",
+          "label": "Changed ending",
+          "operations": [
+            {
+              "type": "replace-event",
+              "targetEventRef": "event.harmony-grid-c.dominant",
+              "event": {
+                "id": "event.harmony-grid-c.alternate-ending",
+                "type": "chord",
+                "start": { "beat": { "numerator": 2, "denominator": 1 } },
+                "duration": { "beats": { "numerator": 2, "denominator": 1 } },
+                "roleRefs": ["role.harmony-grid-c.harmony"],
+                "harmony": {
+                  "root": {
+                    "strategy": "spelled-pitch",
+                    "version": "1",
+                    "value": { "step": "A", "alter": 0 }
+                  },
+                  "quality": {
+                    "vocabularyId": "mnls.chord-quality",
+                    "vocabularyVersion": "1.0.0",
+                    "qualityId": "minor"
+                  }
+                },
+                "voicing": { "state": "intentionally-unspecified", "reason": "alternate ending" }
+              }
+            }
+          ]
+        }
+      ],
+      "duration": { "beats": { "numerator": 8, "denominator": 1 } }
+    }
+  ],
+  "sourceRegister": [
+    {
+      "id": "source.harmony-grid-c",
+      "status": "synthetic",
+      "repositoryUsePermitted": true,
+      "sourceReference": "Created for MNLS Sprint 1",
+      "behaviors": ["two chords in one measure", "repetition provenance", "alternate ending"],
+      "limitations": ["Synthetic harmonic fixture; no broad harmony rendering claim"]
+    }
+  ]
+}
