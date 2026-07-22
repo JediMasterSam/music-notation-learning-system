@@ -1,6 +1,7 @@
 # Repository Structure
 
-Status: Architecture Sprint 0 complete — proposed for review
+Status: Architecture Sprint 0.1 complete — proposed for review  
+Architecture baseline: 0.2
 
 ## 1. Workspace layout
 
@@ -10,369 +11,474 @@ Status: Architecture Sprint 0 complete — proposed for review
   package.json
   package-lock.json
   tsconfig.base.json
-  vitest.workspace.ts
   eslint.config.js
-  .editorconfig
   .nvmrc
+  .github/
+    workflows/check.yml
+
   Agents/
     00_Project_Constitution/
     01_Product/
+      ArchitectureSprint0.1Handoff.md
+      TraceabilityMatrix.md
     02_Architecture/
+      Architecture.md
+      CanonicalModel.md
+      ExperimentWorkbench.md
+      LearningTransformations.md
+      PatternEngine.md
+      RenderingPipeline.md
+      RenderingEngine.md
+      RepositoryStructure.md
+      TestingStrategy.md
+      TechnicalDecisions.md
+      ArchitectureReview.md
     03_Corpus/
     04_Experiments/
     05_Implementation/
-    06_Reference/
+      Sprint1.md
+
   packages/
     schema/
-      package.json
       src/
-      schemas/
-        0.1/
+        canonical/
+        recipes/
+        learning/
+        experiments/
+        manifests/
       examples/
-      test/
+      tests/
+
     model/
-      package.json
       src/
-      test/
+        canonical/
+        time/
+        specificity/
+        provenance/
+      tests/
+
     pitch/
-      package.json
       src/
-        strategies/
-      test/
+        contracts/
+        strategies/spelled-pitch-v1/
+      tests/conformance/
+
     validator/
-      package.json
       src/
-      test/
+        canonical/
+        harmony/
+        hints/
+        references/
+        time/
+      tests/
+
     patterns/
-      package.json
       src/
-      libraries/
-      test/
+      tests/
+
     normalizer/
-      package.json
       src/
-      test/
+      tests/
+
     transposition/
-      package.json
       src/
-      test/
+      tests/
+
+    learning/
+      src/
+        contracts/
+        registry/
+        compatibility/
+        executor/
+        overrides/
+        strategies/idea-boundary-v1/
+      tests/
+
+    workbench/
+      src/
+        recipes/
+        strategies/
+        capability/
+        compatibility/
+        experiments/
+        manifests/
+        comparison/
+      tests/
+
     projection/
-      package.json
       src/
-      test/
+      tests/
+
     layout/
-      package.json
       src/
-      test/
+        contracts/
+        scene/
+        strategies/
+          time-fixed-beat-grid-v1/
+          time-proportional-v1/
+          duration-grid-span-v1/
+          duration-proportional-extent-v1/
+          pitch-absolute-chromatic-y-v1/
+          labels-exact-pitch-v1/
+          overlay-beat-subdivision-v1/
+          overlay-time-reference-v1/
+      tests/
+
     renderer-html/
-      package.json
       src/
-      test/
+      tests/
+
     corpus-tools/
-      package.json
       src/
-      test/
+      tests/
+
     cli/
-      package.json
       src/
-      test/
+        commands/
+        composition-root/
+      tests/
+
     test-fixtures/
-      package.json
       src/
       fixtures/
+
+    workbench-web/                 # reserved; no Sprint 1 production implementation
+      README.md
+
   corpus/
     fixtures/
-      synthetic/
-      public-domain/
-      analytical/
-    expected/
-      normalized/
-      rendered/
-      reports/
+      melody-spatial-a/
+      melody-learning-b/
+      harmony-grid-c/
+      contract-voicing-hints/
     sources/
+    expected/
     SOURCE_REGISTER.md
-  reports/
-    architecture/
-    sprint-1/
-    corpus/
-  scripts/
-```
 
-The existing `Agents/` hierarchy remains the product and governance source of truth. Engineering implementation is added at repository root rather than nested under `Agents/`.
+  experiments/
+    recipes/
+      explicit-grid.recipe.json
+      proportional-spatial-melody.recipe.json
+    definitions/
+      spatial-melody-comparison.experiment.json
+    expected/
+    observations/
+      README.md
+
+  learning/
+    transformations/
+      idea-boundary.learning-transform.json
+    plans/                         # generated; selected expected plans may be committed
+    expected/
+
+  output/                          # generated; gitignored except README if needed
+
+  scripts/
+    verify-generated.ts
+    verify-traceability.ts
+```
 
 ## 2. Package dependency direction
 
 ```text
 schema
   ^
-model <- pitch
-  ^       ^
-validator |
-  ^       |
-patterns  |
-  ^       |
-normalizer <- transposition
+model <--- pitch
+  ^        ^
+  |        |
+validator  |
+  ^        |
+patterns   |
+  ^        |
+normalizer +---- transposition
+  ^                   ^
+  |                   |
+  +-------- learning  |
+  ^            ^      |
+  |            |      |
+projection <---+------+
   ^
-projection
-  ^
-layout
-  ^
-renderer-html
+  |
+layout <---- workbench
+  ^             ^
+  |             |
+renderer-html   |
+  ^             |
+  +---------- cli (composition root)
 
-corpus-tools -> schema, model, validator, normalizer, projection, renderer-html
-cli          -> all public application packages
-test-fixtures-> schema/model contracts only
+corpus-tools -> schema/model/validator/normalizer/learning/workbench/renderer-html
+test-fixtures -> schema/model contracts only
+workbench-web (deferred) -> public workbench/learning/CLI-service adapters only
 ```
 
-A package may depend on packages to its left or above, never on a package below it. In particular:
+Normative rules:
 
-- `model` cannot import `normalizer`, `projection`, `layout`, or renderer packages.
-- `normalizer` cannot import renderer packages.
-- `renderer-html` cannot import schema internals or perform semantic validation.
-- `cli` contains no music rules; it orchestrates public APIs.
+1. `model` never imports workbench, learning, projection, layout, renderer, CLI, or corpus tools.
+2. `normalizer` never imports learning or workbench; learning chunks are not normalization output.
+3. `learning` imports normalized/model contracts and workbench capability contract through a small interface, but not renderer implementations.
+4. `workbench` owns registry/recipe/experiment orchestration and receives implementations through dependency injection; it does not import CLI.
+5. `layout` owns strategy implementations and scene contracts; it does not resolve recipes or inspect canonical JSON.
+6. `renderer-html` consumes `LayoutPlan` only.
+7. `cli` is the composition root that registers built-in pitch, learning, layout, and renderer strategies.
+8. `workbench-web` cannot define schemas or musical semantics; when implemented, it calls public workbench APIs.
 
-Circular workspace dependencies are prohibited.
+A dependency-cycle check runs in `npm run check`.
 
 ## 3. Package responsibilities and public APIs
 
 ### `@mnls/schema`
 
-Owns versioned JSON Schemas, schema registry, examples, structural validation adapter, and schema-path-to-diagnostic mapping.
+Owns JSON Schema 2020-12 for:
 
-Public API:
+- canonical schema `0.1.0`;
+- recipe format `0.1.0`;
+- learning transformation definition `0.1.0`;
+- learning plan `0.1.0`;
+- experiment definition `0.1.0`;
+- resolved recipe and run manifests `0.1.0`.
 
-```text
-getSchema(version)
-validateStructure(json, options) -> Result<StructurallyValidDocument>
-listSupportedSchemaVersions()
-```
-
-No semantic defaults or TypeScript-only constraints may exist here without an equivalent schema rule.
+Exports schema IDs, validators, structural diagnostic mapping, valid/invalid examples, and migration entrypoints. It does not apply semantic/compatibility defaults.
 
 ### `@mnls/model`
 
-Owns canonical domain types, stable ID types, rational arithmetic, specificity unions, immutable constructors, typed reference index, and semantic value objects independent of pitch-strategy implementation.
-
-Public API:
-
-```text
-loadCanonical(structurallyValid, registries) -> Result<CanonicalDocument>
-buildReferenceIndex(document) -> Result<ReferenceIndex>
-canonicalSerialize(document) -> string
-```
+Owns canonical TypeScript types, rational arithmetic, stable IDs, specificity wrappers, typed references, canonical provenance declarations, immutable helpers, and canonical serializer contracts. `Arrangement` has no learning-plan/recipe fields.
 
 ### `@mnls/pitch`
 
-Owns `PitchStrategy`, strategy registry, `spelled-pitch@1`, semantic intervals, and capability negotiation.
-
-Public API:
-
-```text
-registerPitchStrategy(strategy)
-validatePitch(envelope)
-transposePitch(envelope, operation)
-comparePitchClassSets(values)
-formatPitch(envelope, context)
-```
-
-No external music library type appears in public canonical contracts.
+Owns canonical pitch strategy contracts, semantic comparison/transposition/formatting, and Sprint 1 `spelled-pitch@1`. Visual y mapping belongs to layout, not pitch canonical strategy.
 
 ### `@mnls/validator`
 
-Owns semantic validation passes and diagnostic aggregation.
-
-Public API:
-
-```text
-validateSemantics(document, registries, options) -> ValidationReport
-assertNormalizable(report) -> Result<ValidatedDocument>
-```
-
-Validation passes are pure, ordered, individually testable, and identified by diagnostic code families.
+Owns semantic validation of canonical data: references, timing, roles/hands, harmony/inversion/slash bass/voicing, patterns/repetition/variation graph constraints, hints, and contradictions.
 
 ### `@mnls/patterns`
 
-Owns pattern definition/instance contracts, registries, parameter validation, expansion, composition-cycle detection, override application, and vocabulary accounting.
-
-Public API:
-
-```text
-resolvePatternDefinition(ref, registries)
-validatePatternInstance(instance, context)
-expandPattern(instance, context) -> Result<ExpandedPattern>
-reportPatternVocabulary(documents)
-```
+Owns pattern registry, parameter schemas, deterministic semantic expansion, override precedence, vocabulary reports, and pattern provenance.
 
 ### `@mnls/normalizer`
 
-Owns deterministic reference resolution, repetition placement, variation operations, alternate endings, pattern materialization, role/hand resolution, timeline sorting, and provenance chains.
-
-Public API:
+Owns reference resolution and deterministic semantic timeline materialization. Public API:
 
 ```text
-normalizeArrangement(document, arrangementId, options, registries)
-  -> Result<NormalizedArrangement>
+normalize(document, arrangementId, options): StageResult<NormalizedArrangement>
 ```
 
-The package never writes canonical files.
+No learning plans, recipes, or coordinates.
 
 ### `@mnls/transposition`
 
-Owns graph traversal for semantic transposition and invariance checks. Pitch math is delegated to `@mnls/pitch`.
+Owns semantic graph transposition using `PitchStrategy`. Public APIs accept canonical or normalized inputs and return new values plus provenance/diagnostics.
+
+### `@mnls/learning`
+
+Owns:
+
+- transformation definition/descriptor interfaces;
+- transformation registry;
+- capability compatibility checks;
+- deterministic execution;
+- learning-plan validation and hashing;
+- plan-local overrides;
+- `idea-boundary@1` Sprint 1 strategy.
 
 Public API:
 
 ```text
-transposeCanonical(document, operation, registries)
-transposeNormalized(arrangement, operation, registries)
+listLearningStrategies(): LearningTransformationDescriptor[]
+resolveLearningTransformation(ref): StageResult<RegisteredLearningTransformation>
+generateLearningPlan(arrangement, capabilityProfile, definition, parameters): StageResult<LearningPlan>
+verifyLearningPlan(plan, arrangement, definition): StageResult<VerifiedLearningPlan>
 ```
 
-String replacement of rendered note/chord labels is prohibited.
+### `@mnls/workbench`
+
+Owns:
+
+- `RepresentationRecipe`, `StrategyDescriptor`, `StrategyCatalog` contracts;
+- arrangement capability analysis;
+- recipe structural/option resolution;
+- compatibility classification;
+- experiment definition/run orchestration;
+- resolved recipe and run manifest hashing;
+- deterministic comparison-page model (not serialization).
+
+Public API:
+
+```text
+analyzeCapabilities(arrangement): ArrangementCapabilityProfile
+listStrategies(kind?): StrategyDescriptor[]
+resolveRecipe(recipe, catalog): StageResult<ResolvedRecipe>
+validateCompatibility(profile, resolvedRecipe, learningPlan?): CompatibilityReport
+runTreatment(input): StageResult<TreatmentRun>
+runExperiment(definition, resolver): StageResult<ExperimentRun>
+```
 
 ### `@mnls/projection`
 
-Owns view specifications and semantic filtering while retaining temporal/structural context.
-
-Public API:
-
-```text
-projectView(normalized, viewSpec) -> Result<ProjectedView>
-```
+Owns semantic selection/filtering from normalized arrangement plus optional learning plan and resolved recipe into `ProjectedView`. It preserves context and provenance, and does not compute coordinates.
 
 ### `@mnls/layout`
 
-Owns renderer-neutral layout planning: lanes, beat cells, structural groups, content priority, break opportunities, and responsive constraints.
+Owns strategy contracts, built-in Sprint 1 time/pitch/duration/label/overlay strategies, scene graph, deterministic coordinate scalar/rounding, and `LayoutPlan`.
 
 Public API:
 
 ```text
-prepareLayout(projected, layoutOptions) -> Result<LayoutPlan>
+layout(projectedView, resolvedRecipe, strategyCatalog, environment): StageResult<LayoutPlan>
 ```
-
-It may assign derived coordinates in `LayoutPlan`; these never return to canonical data.
 
 ### `@mnls/renderer-html`
 
-Owns safe semantic HTML/SVG output, accessible labels, CSS tokens, and deterministic serialization.
-
-Public API:
+Owns safe HTML/SVG serialization and accessibility plan realization. Public API:
 
 ```text
-renderHtml(layoutPlan, renderOptions) -> Result<RenderedBundle>
+renderHtml(layoutPlan, manifestSummary, options): StageResult<RenderedBundle>
 ```
+
+It does not import canonical validators or strategy registries.
 
 ### `@mnls/corpus-tools`
 
-Owns corpus manifest validation, source-policy checks, expected assertion execution, coverage reports, and vocabulary reports.
+Owns source-policy validation, category coverage, corpus regression, expected semantic assertions, vocabulary reports, and workbench treatment coverage reports.
 
 ### `@mnls/cli`
 
-Owns the executable `music`, argument parsing, file access, formatting, and exit codes.
+Owns commands, composition root, stable exit codes, text/JSON diagnostic formatting, file I/O, and output directory management. It registers built-in strategy implementations and delegates all domain work.
 
 ### `@mnls/test-fixtures`
 
-Owns small lawful fixture data and builders used across packages. It does not contain production behavior.
+Owns small lawful test fixtures/builders. It cannot hide invalid canonical data through builder defaults; generated JSON must pass the same validators as authored files.
 
-## 4. TypeScript and package configuration
+### `@mnls/workbench-web` (deferred)
 
-- Node.js 24 LTS is pinned in `.nvmrc` and `package.json#engines`.
-- npm workspaces list `packages/*`.
-- All packages are private during Prototype 1 unless explicitly approved for publication.
-- ESM modules are used consistently.
-- `tsconfig.base.json` enables `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, and declaration output.
-- Each package builds to `dist/` and exposes only declared entry points.
-- Internal source imports across packages are prohibited; use package exports.
-- JSON Schemas and corpus fixtures are copied or referenced through explicit package exports.
+Reserved adapter boundary. Sprint 1 contains only a README/API dependency contract so no UI placeholder is mistaken for a functional requirement. Later implementation may provide generated forms and live preview using schemas and public workbench APIs.
 
-## 5. Dependency policy
+## 4. Artifact directories
 
-Required categories:
+### `experiments/recipes`
 
-| Category | Selection requirement |
-|---|---|
-| JSON Schema validator | full JSON Schema 2020-12 support, deterministic diagnostics, maintained ESM support |
-| TypeScript | 5.x, one version at root |
-| Test runner | Vitest workspace |
-| Lint/format | root-configured and workspace-wide |
-| HTML/SVG serialization | safe text escaping and deterministic output |
-| Music theory utility | optional; wrapped inside pitch strategy only |
+Authored declarative recipes. No TypeScript or musical events. Sprint 1 commits the two required treatment recipes.
 
-A new library requires an ADR amendment when it affects canonical data, diagnostics, determinism, public APIs, or renderer security.
+### `experiments/definitions`
 
-## 6. Repository commands
+Reproducible experiment definitions. Sprint 1 commits one spatial-melody comparison definition.
 
-Root `package.json` must expose:
+### `learning/transformations`
+
+Reusable transformation definitions. Sprint 1 commits `idea-boundary@1` configuration.
+
+### Generated plans and expected artifacts
+
+`learning/plans` and `output` are generated and normally gitignored. Small expected plans/manifests may be committed under `learning/expected`, `experiments/expected`, or `corpus/expected` when they serve regression tests and contain no copyrighted music beyond lawful fixtures.
+
+## 5. TypeScript and package configuration
+
+- ESM packages with explicit exports;
+- strict TypeScript, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`;
+- project references or equivalent build ordering;
+- shared test/tsconfig bases;
+- package-specific public API tests;
+- no deep imports across packages;
+- dependency graph verification;
+- deterministic JSON serializer shared through model/util contract;
+- exact Node/npm versions selected and pinned at Sprint 1 start.
+
+## 6. Dependency policy
+
+1. Prefer small maintained libraries with compatible licenses.
+2. Lock all versions through `package-lock.json`.
+3. No music library type leaks into canonical public APIs.
+4. No runtime dynamic plugin/module loading in Sprint 1.
+5. No renderer/layout library may infer music.
+6. No schema library default may create musical meaning.
+7. A new consequential runtime dependency requires ADR review.
+8. A new strategy implementation requires descriptor, option schema, conformance tests, and registry entry.
+
+## 7. Repository commands
 
 ```text
-npm run build           # build packages in dependency order
-npm run clean           # remove derived build and test output only
-npm run format          # apply formatting
-npm run format:check    # verify formatting
-npm run lint            # lint all workspaces
-npm run typecheck       # no-emit strict typecheck
-npm test                # unit and integration tests
-npm run test:watch      # local test watch mode
-npm run test:corpus     # lawful corpus regression suite
-npm run test:a11y       # static accessibility assertions
-npm run schema:check    # compile schemas and validate examples
-npm run check           # format:check, lint, typecheck, schema:check, test, test:corpus
-```
+npm ci
+npm run build
+npm run typecheck
+npm run lint
+npm test
+npm run test:unit
+npm run test:integration
+npm run test:corpus
+npm run test:reproducibility
+npm run check
 
-CLI commands:
-
-```text
-music validate <file> [--format text|json] [--strict]
-music normalize <file> --arrangement <id> --out <file>
+music validate <file> [--format text|json]
+music normalize <file> --out <file>
 music transpose <file> --interval <semantic-interval> --out <file>
-music render <file> --arrangement <id> --view <view-spec> --out <directory>
-music corpus test [--filter <corpus-id>]
-music vocabulary report [<file-or-corpus>] [--format text|json]
+music strategy list [--kind <kind>] [--format text|json]
+music strategy describe <id>@<version>
+music recipe validate <recipe> --arrangement <file>
+music recipe resolve <recipe> --arrangement <file> --out <file>
+music learning strategy list
+music learning validate <definition>
+music learning plan <arrangement> --transformation <definition> --out <plan>
+music learning verify <plan> --arrangement <arrangement>
+music render <arrangement> --recipe <recipe> [--learning-plan <plan>] --out <dir>
+music compare <arrangement> --recipes <a> <b> --out <dir>
+music experiment run <definition> --out <dir>
+music corpus test
+music vocabulary report [<file-or-corpus>]
 ```
 
-## 7. Exit codes
+## 8. Exit codes
 
 | Code | Meaning |
 |---|---|
-| 0 | success; warnings may exist |
-| 1 | validation or semantic errors in user data |
-| 2 | invalid command usage |
-| 3 | unsupported schema/strategy/version |
-| 4 | file or environment failure |
-| 5 | internal invariant failure |
+| 0 | success, including acknowledged limitations |
+| 1 | invalid command or environment |
+| 2 | load/parse/schema error |
+| 3 | canonical semantic/reference error |
+| 4 | normalization/transposition error |
+| 5 | recipe/strategy/capability incompatibility or unavailable version |
+| 6 | learning transformation/plan error |
+| 7 | layout/render/accessibility error |
+| 8 | corpus/experiment regression failure |
+| 9 | reproducibility/hash mismatch |
 
-Machine-readable output is written to stdout; human diagnostics and progress go to stderr. Commands never mix rendered files with diagnostic JSON.
+JSON diagnostic output remains stable and is not inferred from prose.
 
-## 8. Fixture and expected-output policy
+## 9. Fixture policy for revised Sprint 1
 
-- `packages/test-fixtures` contains minimal requirement-isolation cases.
-- `corpus/fixtures` contains permanent representative lawful material.
-- Every corpus fixture has a `SOURCE_REGISTER.md` entry before merge.
-- Expected normalized JSON is used only for deterministic regression and is never treated as canonical.
-- Render snapshots supplement DOM/semantic assertions and must exclude unstable timestamps or paths.
-- Generated output directories are disposable and normally ignored, except approved expected artifacts.
+Functional fixtures:
 
-## 9. Documentation ownership
+1. `melody-spatial-a` — canonical melody used by both explicit-grid and proportional-spatial recipes.
+2. `melody-learning-b` — second small melody/arrangement with musical ideas for reusable learning transformation proof.
+3. `harmony-grid-c` — beat-aligned harmony/repetition fixture, retained for normalization/contract coverage and second learning-plan application when compatible.
 
-- Product meaning remains in `Agents/00_Project_Constitution` and `Agents/01_Product`.
-- Architecture meaning remains in `Agents/02_Architecture` and ADRs.
-- Corpus approval remains in `Agents/03_Corpus`.
-- Experiments remain in `Agents/04_Experiments`.
-- Sprint work and acceptance remain in `Agents/05_Implementation`.
-- Code comments link to requirement and ADR IDs but do not restate or redefine product rules.
+Contract fixture:
 
-## 10. Rejected structures
+4. `contract-voicing-hints` — minimal lawful data preserving inversion/slash bass/voicing/specificity/familiar-shape assertions. Full functional rendering is deferred unless implementation capacity remains after all workbench exit criteria pass.
 
-- Single package: rejected because experimental boundaries and dependency rules would be unenforceable.
-- Package per canonical type: rejected as excessive fragmentation.
-- Renderer inside model: rejected because presentation would control semantics.
-- Schema generated from handwritten TypeScript as sole authority: rejected because JSON Schema 2020-12 is approved as structural source of truth.
-- Corpus mixed into unit-test directories: rejected because source policy and permanent regression status require separate governance.
-- Implementation under `Agents/`: rejected because governance documents and executable source have different lifecycles.
+Each fixture has source status, behaviors tested, limitations, and expected assertions.
 
-## 11. Requirement links
+## 10. Documentation ownership
 
-R-004, R-048: schema/model ownership.  
-R-005–R-025: model, pitch, validator, patterns, normalizer.  
-R-026–R-041: projection, layout, renderer-html.  
-R-043–R-046: corpus-tools and corpus layout.  
-R-047, R-050: package boundaries preserve experiments and future adapters.
+- Product Owner owns Constitution, requirements, decisions, assumptions, handoff, experiments, and corpus approval.
+- Architect owns `02_Architecture`, architecture ADRs, traceability architecture columns, and Sprint plan technical sequencing.
+- Implementation Agent updates implementation reports and proposes, but does not silently change, architecture/product meaning.
+
+## 11. Rejected structures
+
+- learning transformation code inside fixtures;
+- recipes embedded in renderer source;
+- one package containing model through UI;
+- `Arrangement.learningChunks` or `Arrangement.recipe`;
+- browser app defining configuration JSON ad hoc;
+- runtime plugin folder that executes arbitrary JavaScript;
+- output snapshots committed without manifest/version provenance;
+- duplicate package contracts for capability or strategy identity.
+
+## 12. Requirement links
+
+- R-004–R-025: schema/model/pitch/validator/patterns/normalizer/transposition.
+- R-010, R-030, R-042: learning package and derived plan artifacts.
+- R-026–R-034: workbench/projection/layout/renderer-html.
+- R-035–R-041: model/validator/projection/render contract fixture.
+- R-043–R-046: corpus-tools/test-fixtures and human observation separation.
+- R-047–R-050: schema/workbench/CLI/package boundaries.

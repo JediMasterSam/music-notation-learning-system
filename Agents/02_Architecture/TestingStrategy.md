@@ -1,320 +1,406 @@
 # Testing Strategy
 
-Status: Architecture Sprint 0 complete — proposed for review
+Status: Architecture Sprint 0.1 complete — proposed for review  
+Architecture baseline: 0.2
 
 ## 1. Objectives
 
-Testing must prove semantic correctness, preservation of approved distinctions, deterministic derivation, safe accessible rendering, and corpus-wide abstraction fitness. Passing parser or renderer tests does not prove learning value; human evaluation remains a separate product validation track.
+Testing must prove that canonical music remains authoritative while reusable learning transformations and declarative representation recipes produce deterministic, truthful, accessible, and reproducible derived artifacts.
 
-Linked requirements: R-004–R-050. Acceptance tests: AT-001–AT-013.
+Automated tests prove software behavior. They do not prove that a treatment improves learning. Human evaluation remains a separate protocol and observation record.
 
 ## 2. Test layers
 
-| Layer | Scope | Primary package | Required evidence |
-|---|---|---|---|
-| schema | JSON shape and discriminated unions | `schema` | valid/invalid examples for every canonical construct |
-| semantic model | invariants and typed references | `model`, `validator` | exact diagnostic codes and canonical IDs |
-| pitch strategy | validation, formatting, transposition capabilities | `pitch` | strategy conformance suite |
-| pattern engine | parameters, composition, overrides, provenance | `patterns` | deterministic expansion and vocabulary reports |
-| normalization | references, repeats, variations, endings, timing | `normalizer` | normalized semantic assertions and provenance |
-| transposition | graph-wide semantic preservation | `transposition` | metamorphic and round-trip tests |
-| projection | role/hand/chunk/excerpt filtering | `projection` | retained time/structure and no semantic mutation |
-| layout | beat cells, lanes, adaptive priorities | `layout` | structural plan assertions |
-| rendering | DOM/SVG, escaping, accessibility | `renderer-html` | semantic DOM assertions plus limited snapshots |
-| CLI | orchestration, files, exit codes | `cli` | black-box command tests |
-| corpus | representative permanent regressions | `corpus-tools` | source policy, coverage, vocabulary, output checks |
-| human learning | comprehension, memory, execution, coordination | Product Owner/validation | repeatable protocol and observations |
+1. schema validation;
+2. canonical semantic model behavior;
+3. pitch strategy conformance;
+4. normalization and provenance;
+5. semantic transposition;
+6. arrangement capability analysis;
+7. learning transformation and plan validation;
+8. recipe resolution and strategy compatibility;
+9. projection;
+10. strategy-driven layout;
+11. HTML/SVG semantic DOM, security, and accessibility;
+12. experiment/run reproducibility;
+13. corpus regression and vocabulary/coverage reporting;
+14. human learning protocol outside automated gates.
 
-## 3. Mandatory construct test rule
+## 3. Mandatory construct rule
 
-Every canonical semantic construct requires:
+Every canonical type, derived artifact type, strategy kind, transformation primitive, and externally visible diagnostic requires:
 
-1. at least one valid schema example;
-2. at least one invalid structural or semantic example;
-3. model/reference behavior test;
-4. specificity-state test when omission can be meaningful;
-5. transposition test when pitch-bearing;
-6. normalization/provenance test when reusable or referenced;
-7. rendering test when learner-visible;
-8. corpus regression when the construct is introduced or challenged by representative music.
+1. a valid schema example;
+2. an invalid structural example;
+3. an invalid semantic/compatibility example where applicable;
+4. TypeScript contract/type test;
+5. deterministic round-trip or canonical serialization test;
+6. provenance test when derived;
+7. transposition test when pitch bearing;
+8. rendering/DOM test when visible;
+9. corpus regression case when the construct was introduced by representative music;
+10. requirement/ADR/handoff traceability.
 
-A construct is incomplete until its invalid behavior is defined.
+Visual snapshots may supplement but never replace semantic or mathematical assertions.
 
 ## 4. Fixture taxonomy
 
-### Requirement-isolation fixtures
+### 4.1 Requirement-isolation fixtures
 
-Small synthetic fixtures under `packages/test-fixtures/fixtures` isolate one rule and are safe to modify as tests evolve. Naming uses requirement/acceptance IDs, for example `at-004-unspecified-voicing.json`.
+Small synthetic JSON focused on one rule: specificity, inversion/slash bass, dangling refs, grid incompatibility, unknown hands, false hint equivalence, recipe conflicts, copied events in learning plans.
 
-### Golden corpus fixtures
+### 4.2 Sprint 1 vertical fixtures
 
-Permanent lawful fixtures under `corpus/fixtures` exercise combinations representative of real music. They require source-register entries and explicit behavior coverage. They are not chosen for ease of encoding.
+- **M-A `melody-spatial-a`:** exact register-bearing melody, repeated pitch, small and large intervals, varied durations, pickup or subdivision onset, musical-idea boundaries. Same canonical source for both functional rendering treatments.
+- **M-B `melody-learning-b`:** second lawful melody/arrangement with at least two musical ideas. Used with the same `idea-boundary@1` transformation.
+- **H-C `harmony-grid-c`:** multiple chords in one measure, repeated idea, alternate ending, exact rational timing, musical ideas. Retained for normalization/provenance and as a second transformation target when compatible.
+- **C-D `contract-voicing-hints`:** canonical `Am7`, explicit A bass, `C/A` exact hint, required and intentionally unspecified voicings, independent inversion/slash bass. Contract-level rendering/projection tests; full treatment rendering deferred unless capacity remains.
 
-### Generated test cases
+All fixtures have lawful source records and explicit limitations.
 
-Deterministic test generators may create rational times, specificity states, transposition operations, and reference graphs. A fixed seed is recorded on failure. No generated case becomes a golden-corpus item without source and product review.
+### 4.3 Golden corpus fixtures
+
+Permanent category fixtures C-G01–C-G09. Sprint 1 does not claim broad corpus completion; it reports uncovered categories and retains source-policy gates.
+
+### 4.4 Generated/property cases
+
+Generated rational times, pitch sequences, specificity states, strategy option combinations, malicious text, and graph structures. Generators must be seeded and report the seed on failure.
 
 ## 5. Schema tests
 
-- Compile every supported schema with strict JSON Schema 2020-12 settings.
-- Validate every published valid and invalid example.
-- Assert diagnostic JSON pointers and stable schema error mapping.
-- Test `additionalProperties` behavior and namespaced extensions.
-- Test all `SpecificValue<T>` branches.
-- Test exact rational shapes and positive denominators.
-- Test no canonical layout fields through a forbidden-field fixture set.
-- Test schema version rejection and explicit migration requirement.
+Validate separate schema families:
 
-Schema snapshots may capture schema files, but behavior assertions remain authoritative.
+- canonical `0.1.0`;
+- representation recipe `0.1.0`;
+- learning transformation definition `0.1.0`;
+- learning plan `0.1.0`;
+- experiment definition `0.1.0`;
+- resolved recipe/run manifest `0.1.0`.
 
-## 6. Semantic validation tests
+Required negative tests:
 
-Passes are tested independently and as an ordered aggregate:
+- `Arrangement.learningChunks` rejected;
+- recipe contains note/chord events, x/y, raw markup, or executable fields;
+- transformation definition contains executable callback/script;
+- learning chunk copies event payload;
+- unpinned strategy/transformation version;
+- missing experiment controlled/changed variable declarations;
+- specificity absent-value state contains `value`;
+- canonical renderer coordinates/line breaks.
 
-- stable ID uniqueness and wrong-kind references;
-- song/arrangement linkage;
-- event spans and measure map consistency;
-- sections versus learning chunks;
-- roles versus hands;
-- inversion versus slash bass versus voicing;
-- unknown versus intentionally unspecified;
-- pattern/repetition/variation cycles;
-- override target and allowlist rules;
-- lyric anchors;
-- lawful source status;
-- familiar-shape exact/subset/approximation classification.
+Schema examples compile in CI and are cross-checked against TypeScript public types.
 
-Tests assert diagnostic code, severity, canonical ID, JSON pointer, and requirement ID where applicable. Message wording may be snapshot-tested separately but is not the only assertion.
+## 6. Canonical semantic validation
 
-## 7. Pitch-strategy conformance suite
+Retain Sprint 0 tests for:
 
-Every registered strategy runs the same contract tests:
+- song/arrangement separation;
+- exact rational time and measure coordinates;
+- roles independent of hands;
+- structural ideas independent of learning plans;
+- inversion, slash bass, and voicing independent;
+- all five specificity states;
+- patterns/repetitions/variations/alternate endings and cycles;
+- lyrics anchored without whitespace;
+- familiar-shape hint equivalence/suppression;
+- lawful source records.
 
-- accepts its valid pitch and pitch-class payloads;
-- rejects wrong-kind and malformed payloads;
-- formats without changing semantic values;
-- transposes supported values deterministically;
-- preserves or explicitly reports spelling decisions;
-- compares pitch-class sets when capability is declared;
-- round-trips supported operations where musically valid;
-- never exposes third-party library types through public contracts.
+Add a canonical-boundary test asserting that deleting every recipe, plan, and experiment file leaves canonical validation/meaning unchanged.
 
-`spelled-pitch@1` is required in Sprint 1. At least one minimal test strategy proves registry replacement and unsupported-capability diagnostics.
+## 7. Pitch strategy conformance
+
+Every canonical `PitchStrategy` implementation passes:
+
+- payload schema/semantic validation;
+- pitch versus pitch-class kind distinction;
+- equality/comparison laws;
+- transposition identity and inverse where supported;
+- interval composition;
+- deterministic formatting under pinned options;
+- no library-specific type leakage;
+- enharmonic/spelling behavior documented and tested.
+
+Every visual `PitchMappingStrategy` separately passes its descriptor contract. Canonical pitch representation and y mapping are never conflated.
 
 ## 8. Specificity preservation suite
 
-For each of the five states, create a fixture that passes through:
+For each state — required, suggested, optional, intentionally unspecified, unknown — assert identity through:
 
 ```text
-schema -> model -> semantic validation -> normalization -> transposition
--> projection -> layout -> render manifest
+load -> schema -> semantic -> normalize -> transpose
+-> capability analysis -> learning-plan selection
+-> recipe projection -> explicit-grid layout/render
+-> proportional-spatial layout/render
 ```
 
-Assertions:
+No stage may add a value to absent-value states. DOM/accessibility output contains state text when relevant. Hand-filter and overlay tests preserve unknown/unspecified rather than infer assignment.
 
-- state is unchanged;
-- value-bearing states transpose only the value;
-- absent-value states never acquire a value;
-- view hiding does not modify source/normalized state;
-- rendered state uses noncolor text/semantic tokens;
-- serialization round-trip preserves state.
+## 9. Normalization and provenance
 
-This suite is a release gate.
+Required assertions:
 
-## 9. Normalization and provenance tests
+- deterministic event order and IDs;
+- exact rational reduction;
+- pattern/repetition/variation expansion;
+- alternate ending differences explicit;
+- source family preserved;
+- every normalized event begins with canonical provenance;
+- pattern/override/repetition/variation steps appended in deterministic order;
+- no learning-plan/recipe/layout data in normalized output;
+- canonical input deep-frozen/content hash unchanged;
+- cycles and expansion limits fail with structured diagnostics.
 
-Required cases:
-
-- direct event;
-- referenced musical idea;
-- repeated idea;
-- repeated idea with alternate ending;
-- document-local pattern;
-- nested pattern;
-- pattern override;
-- variation after pattern expansion;
-- role assignment plus independent hand assignment;
-- event crossing measure boundary;
-- syncopated subdivision;
-- cycle and depth failures.
-
-Each normalized event must identify canonical source ID and every derivation step. Tests compare semantic events and provenance arrays, not only counts or snapshots.
-
-Determinism test: run normalization repeatedly with object insertion orders varied where order is nonsemantic and assert byte-identical canonical serialization of normalized output.
+H-C exercises repeat/alternate-ending provenance. C-D exercises harmony distinctions through normalization.
 
 ## 10. Transposition tests
 
 ### Invariants
 
-Transposition preserves:
-
-- stable IDs;
-- time and duration;
-- section/idea/chunk structure;
-- role and hand assignments;
-- repetition, variation, pattern, and transition relationships;
-- specificity states;
-- provenance source identities;
-- canonical hint subordination.
+- form, IDs, exact time, roles, hands, source relationships, patterns, repetition, learning-plan selectors, recipe content, and experiment variables remain stable;
+- pitch-bearing semantic values transpose through `PitchStrategy`;
+- rendered labels are regenerated, not string shifted;
+- hints are revalidated;
+- both treatment recipes remain usable when their capabilities still hold.
 
 ### Metamorphic tests
 
-- transpose by zero yields semantic identity;
-- transpose by interval then inverse returns semantic identity where strategy guarantees reversible spelling;
-- transpose canonical then normalize equals normalize then transpose for declared-commutative constructs;
-- render before/after transposition has identical structure and changed semantic pitch labels only where expected;
-- exact familiar-shape equivalence is revalidated after transposition.
+- transpose by identity yields semantic equality;
+- transpose by interval and inverse restores semantic values where the strategy supports it;
+- normalize then transpose equals transpose then normalize where the pattern contract declares commutativity;
+- generating a learning plan before versus after transposition yields equal selectors/relationships and different only in arrangement hashes where expected.
 
-Unsupported operations produce explicit diagnostics, never partial string substitution.
+## 11. Capability analysis tests
 
-## 11. Projection tests
+- exact timing/pitch evidence derived from selected events;
+- partial/unknown hand states distinguished;
+- musical-idea capability present only when valid ideas exist;
+- pitch-class-set capability depends on registered strategy support;
+- evidence refs stable and relevant;
+- recipe or fixture metadata cannot forge a capability;
+- capability profile deterministic and hashable.
 
-- Full view retains all selected content.
-- Harmonic roadmap keeps form, time, canonical harmony, repeat/variation context.
-- Role isolation hides unrelated events but keeps section/idea/beat context.
-- Hand isolation does not relabel musical roles.
-- Unknown/unspecified hand assignment follows explicit view policy.
-- Learning chunks reference rather than copy music.
-- Excerpts clip visually while retaining source/provenance.
-- Showing/hiding hints changes only hint nodes and layout space.
+## 12. Learning transformation tests
 
-Projection tests deep-freeze normalized input.
+### Registry and definition
 
-## 12. Layout and rendering tests
+- duplicate/missing version rejection;
+- parameter schema valid/invalid/default materialization;
+- unavailable implementation classification;
+- descriptor conformance and deterministic flag.
 
-### Semantic assertions
+### `idea-boundary@1`
 
-- multiple chords in one measure occupy distinct beat/subdivision nodes;
-- measures do not force idea/chunk boundaries;
-- canonical harmony precedes hint in visual and accessible order;
-- inversion, slash bass, and voicing use separate nodes and labels;
-- repeated source and alternate ending have explicit relationships;
-- lyric text anchors to time/event nodes;
-- required content is not dropped under compact density;
-- unknown and intentionally unspecified are distinguishable without color.
+- same definition/parameters apply to M-A and M-B (and H-C if used) without fixture-specific code;
+- one deterministic chunk per selected musical idea;
+- selectors reference canonical IDs/spans;
+- no canonical event payload copied;
+- output order is exact start then stable ID;
+- repeated run byte identical;
+- fixture with no musical ideas returns `LEARN_CAPABILITY_MISSING`;
+- role filter restricts selectors without changing roles;
+- transposition leaves chunk selectors/relationships stable.
 
-### Security assertions
+### Plan overrides and verification
 
-Inject titles, lyrics, labels, aliases, and annotations containing HTML, SVG, CSS, URL, and script payloads. Assert they are escaped text and cannot create nodes, attributes, styles, URLs, or scripts.
+- stable precedence and provenance;
+- suppress/split/merge/filter only affect plan;
+- conflicting overrides fail;
+- stale arrangement/definition hash fails verification;
+- regeneration matches committed expected plan;
+- prerequisite graph cycle rejected.
 
-### Accessibility assertions
+## 13. Recipe and strategy tests
 
-- unique IDs;
-- valid heading order for fixture structure;
-- accessible names for groups and SVG;
-- reading order matches source order;
-- text equivalents for beat position, state, repetition, variation, and hints;
-- color-independent state markers;
-- no interactive element in Sprint 1 output without keyboard/focus behavior.
+### Registry
 
-Automated assertions do not replace manual screen-reader and zoom review before learner tests.
+- unique strategy ID/version/kind;
+- descriptor/implementation version match;
+- deterministic listing independent of registration order;
+- missing pinned version is `unavailable`;
+- kind-specific conformance suites.
 
-## 13. Snapshot policy
+### Recipe resolution
 
-Snapshots are allowed for:
+- schema/option validation;
+- exact version pinning;
+- presentation defaults fully materialized;
+- no musical default insertion;
+- canonical option ordering/hash;
+- recipe containing canonical music or arbitrary code rejected;
+- recipe version/options reflected in output manifest.
 
-- stable normalized JSON;
-- renderer-neutral layout plan excerpts;
-- small HTML/SVG fragments;
-- CLI human diagnostic format.
+### Compatibility matrix
 
-Snapshots may not replace assertions for harmony identity, specificity, provenance, timing, role/hand distinction, hint classification, or accessibility. Large whole-page snapshots require a documented reason and stable serializer.
+Test all four statuses with exact diagnostics:
 
-## 14. Corpus regression
+- supported;
+- supported with acknowledged limitation;
+- incompatible;
+- unavailable.
 
-Each corpus fixture declares:
+Required examples:
 
-- corpus ID/category;
-- source status and repository permission;
-- requirements and acceptance tests exercised;
-- expected valid/invalid status;
-- required semantic assertions;
-- required views;
-- transposition operations;
-- vocabulary expectations;
-- known coverage limitations.
+- contour-only y mapping plus exact label strategy: compatible only under declared independent exact-pitch access;
+- exact hand isolation with unknown hands: incompatible;
+- display of unknown hands without isolation: supported with limitation;
+- duration extent with unknown duration: incompatible;
+- grid resolution too coarse for onset: incompatible or layout error, never rounding;
+- requested learning-plan overlay without a valid plan: incompatible;
+- false hint overlay capability: incompatible/suppressed upstream.
 
-`music corpus test` fails when:
+Assert no fallback strategy is selected.
 
-- source registration is missing or unlawful for repository use;
-- validation/normalization/rendering fails unexpectedly;
-- requirement assertions fail;
-- vocabulary changes without an approved expectation update;
-- normalized/rendered deterministic outputs drift without reviewed semantic cause.
+## 14. Projection tests
 
-## 15. Acceptance-test mapping
+- same normalized source and selected content for M-A across both recipes;
+- role/hand filters preserve structural/time context;
+- optional learning-plan chunk overlay references plan and canonical sources;
+- disclosure hides only allowed information;
+- canonical harmony remains primary over hints;
+- projected nodes contain no final coordinates;
+- limitations/provenance retained.
 
-| Acceptance test | Automated coverage | Human coverage |
-|---|---|---|
-| AT-001 | schema/model/render no invented harmony | none |
-| AT-002 | rational time, layout beat cells | place-keeping later |
-| AT-003 | separate normalized/render nodes | confusion observation later |
-| AT-004 | specificity preservation | performer interpretation later |
-| AT-005 | exact required voicing assertions | playability later |
-| AT-006 | provenance and variation relationships | recognition later |
-| AT-007 | projection assertions | practice usefulness later |
-| AT-008 | transposition metamorphic suite | relearning burden later |
-| AT-009 | hint semantic/render assertions | usefulness/confusion E-006 |
-| AT-010 | validation/suppression cases | misteaching observation E-006 |
-| AT-011 | protocol schema only | required human study |
-| AT-012 | anchor and escaping tests | lyric readability later |
-| AT-013 | repository scan and API tests | none |
+## 15. Layout strategy tests
 
-## 16. Sprint 1 required fixtures
+### 15.1 Exact arithmetic
 
-### Fixture A — Melody only
+Use rational expected values and canonical decimal serialization. No approximate screenshot-only checks.
 
-Covers AT-001 and AT-008 with exact notes, a pickup or tied duration, and two-key render comparison. No harmony object is allowed.
+### 15.2 Explicit beat grid
 
-### Fixture B — Beat-aligned harmony
+- beat/subdivision markers at exact boundaries;
+- event onset maps to the correct cell;
+- duration spans correct cell range;
+- pickup/subdivision onset represented;
+- insufficient subdivision returns diagnostic rather than rounding;
+- repeated pitch maps to same y;
+- exact pitch text contract available.
 
-Covers AT-002 and AT-006 with at least two chords in one measure, a repeated idea, and alternate ending.
+### 15.3 Proportional spatial melody
 
-### Fixture C — Voicing and hint distinctions
+For every selected event:
 
-Covers AT-003–AT-005 and AT-009–AT-010 with canonical `Am7`, explicit A bass, authored exact `C/A` hint, required voicing, intentionally unspecified voicing, explicit inversion, and a separate slash-bass case that does not imply inversion.
+```text
+x2 - x1 = unitsPerBeat * (t2 - t1)
+width = unitsPerBeat * duration
+abs(y2 - y1) = unitsPerSemitone * abs(semitone2 - semitone1)
+```
 
-All are synthetic unless a clearly public-domain source is selected and registered.
+Assert:
 
-## 17. CI and local gates
+- earlier events left of later events;
+- higher pitch visually higher;
+- repeated pitch identical y;
+- larger interval larger displacement;
+- longer duration greater semantic horizontal extent;
+- minimum hit-area decoration does not change semantic duration edge;
+- no stems/flags/traditional note-value glyphs are needed for the duration assertion;
+- exact pitch/onset/duration present in accessible content.
 
-Required merge gate command: `npm run check`.
+### 15.4 Independence
 
-CI jobs may be parallelized after dependency installation, but the logical gate includes:
+Swap compatible label/overlay options without changing time/pitch geometry. Change time strategy without changing canonical/projection content. Invalid cross-strategy combinations fail before layout.
 
-1. format verification;
+## 16. Rendering, security, and accessibility
+
+### Semantic DOM assertions
+
+- treatment name, ID/version, experimental/comparison status;
+- canonical arrangement ID/hash reference;
+- exact pitch/time/duration event text;
+- beat/subdivision markers for grid;
+- recipe/strategy versions and limitations;
+- source IDs/provenance hooks;
+- specificity text;
+- canonical harmony primary and hints subordinate when C-D is projected.
+
+### Security
+
+Property-based malicious text in titles, lyrics, labels, recipe names, experiment questions, annotations, and metadata must render as text. Assert no script execution, raw `innerHTML`, unsafe URL, path traversal, or option-supplied CSS/markup.
+
+### Accessibility
+
+- automated accessibility checker on generated pages;
+- heading/landmark structure;
+- source-order event list/table;
+- keyboard focus order;
+- SVG title/description;
+- no color-only meaning;
+- zoom/reflow smoke test;
+- treatment limitations available in text;
+- exact pitch/time available independent of spatial perception.
+
+## 17. Experiment reproducibility
+
+- definition schema and reference resolution;
+- controlled and changed variables nonempty and disjoint unless explicitly justified;
+- fixture/recipe/transformation hashes pinned;
+- rerun produces byte-identical treatment outputs and manifests;
+- changing one declared changed variable changes recipe/run hash;
+- changing a controlled variable without updating definition produces mismatch/failure;
+- missing strategy/transformation version fails, never upgrades;
+- comparison page contains all treatments and statuses;
+- human observation records are not generated by automated run and are stored separately;
+- no output language claims a treatment is effective or final.
+
+## 18. Corpus regression and coverage
+
+`music corpus test` reports:
+
+- C-G01–C-G09 category coverage;
+- requirements/ADRs/handoff obligations exercised;
+- strategy/transformation/recipe coverage;
+- source-lawfulness status;
+- vocabulary introduced by canonical patterns versus experiment strategy IDs;
+- deferred functional-render coverage.
+
+New shared musical pattern admission still requires E-005 evidence. New visual strategies do not count as canonical learner vocabulary until Product Owner approval, but their experiment identifiers are reported separately.
+
+## 19. Acceptance-test mapping
+
+| Acceptance | Sprint 1 coverage |
+|---|---|
+| AT-001 | M-A/M-B exact notes, no invented harmony |
+| AT-002 | H-C exact chord timing contract; explicit grid time tests |
+| AT-003–AT-005 | C-D canonical/normalization/projection contract tests |
+| AT-006 | H-C repetition/ending provenance |
+| AT-007 | projection contract; full role UI may defer |
+| AT-008 | M-A transposition plus treatment/plan invariants |
+| AT-009–AT-010 | C-D hint validation/projection tests |
+| AT-011 | experiment schema supports separate human observation fields; no automated learning claim |
+| AT-012 | lyric model/escaping contract tests; functional lyric treatment may defer |
+| AT-013 | no final syntax, recipe, or treatment default dependency |
+
+## 20. CI and local gates
+
+`npm run check` order:
+
+1. formatting verification;
 2. lint;
-3. strict typecheck;
-4. schema compilation/examples;
-5. unit/integration tests;
-6. accessibility assertions;
-7. corpus tests;
-8. deterministic rerun check on a representative fixture.
+3. typecheck/build;
+4. schema examples/type parity;
+5. unit/property tests;
+6. integration/CLI tests;
+7. fixture generation and canonical hash checks;
+8. learning-plan regeneration verification;
+9. two-treatment deterministic rendering;
+10. accessibility/security checks;
+11. experiment reproduction verification;
+12. corpus/traceability/coverage reports.
 
-No network access is required for tests after `npm ci`.
+A fresh clone must run with `npm ci` and no uncommitted generated differences after checks.
 
-## 18. Human learning validation
+## 21. Human learning validation
 
-Automated software tests do not close R-001–R-003 or R-046. A later protocol must record separately:
+Experiment definitions may specify tasks and observation fields for comprehension, memory, execution, coordination, time, errors, and subjective friction. Automated tests only verify that these dimensions can be recorded separately. Human results require Product Owner/Validation Agent procedure and cannot be synthesized from render output.
 
-- comprehension;
-- memory;
-- physical execution;
-- coordination;
-- elapsed time;
-- errors;
-- assistance requested;
-- subjective friction.
+## 22. Rejected approaches
 
-Early self-evaluation may generate observations but cannot support a general product-success claim until A-006 is resolved.
-
-## 19. Rejected approaches
-
-- snapshots as the primary semantic test;
-- only “happy path” corpus songs;
-- copyrighted scores committed without lawful basis;
-- float-based time comparisons;
-- tests that infer expected semantics from renderer output;
-- generated hints enabled by default in tests;
-- random test generation without reproducible seeds;
-- claiming learning success from software correctness.
+- screenshot approval as semantic proof;
+- tests specialized to duplicated treatment fixtures;
+- unseeded property generators;
+- fallback strategies hidden from expected output;
+- plans validated only by successful rendering;
+- checking only the happy-path recipe matrix;
+- using automated output as evidence of learning benefit;
+- allowing deferred harmony/voicing rendering to remove their canonical regression tests.

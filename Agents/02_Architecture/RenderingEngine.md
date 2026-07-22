@@ -1,291 +1,360 @@
 # Rendering Engine
 
-Status: Architecture Sprint 0 complete — proposed for review
+Status: Architecture Sprint 0.1 complete — proposed for review  
+Architecture baseline: 0.2
 
 ## 1. Purpose
 
-The rendering engine presents normalized musical meaning as accessible static HTML/SVG learning views. It may select, group, prioritize, and lay out information, but it cannot create, repair, or reinterpret musical semantics.
+The rendering subsystem converts a semantically projected view into a deterministic renderer-neutral layout plan and then safe accessible HTML/SVG. Architecture Sprint 0.1 makes layout behavior strategy driven through declarative recipes. The renderer remains a serializer, not a source of musical meaning or experiment defaults.
 
-Linked requirements: R-011–R-012, R-020–R-041, R-049. Linked experiments: E-003, E-004, E-006.
+Related requirements: R-011–R-012, R-025–R-041, R-047–R-050. Amendment source: Architecture Sprint 0.1 handoff §§5–9.
 
 ## 2. Boundaries
 
-The renderer is split into three packages:
+The subsystem is divided into:
 
-1. `@mnls/projection` selects semantic content for a requested view.
-2. `@mnls/layout` creates a renderer-neutral layout plan with derived geometry.
-3. `@mnls/renderer-html` serializes safe accessible HTML/SVG.
+1. `projection` — selects semantic content and overlays;
+2. `layout` — composes time/pitch/duration/label/overlay/disclosure strategies into a scene;
+3. `renderer-html` — serializes the scene to accessible HTML/SVG;
+4. `workbench` — resolves recipes and compatibility before the rendering subsystem runs.
 
-This separation allows later renderers to reuse projection and possibly layout without importing HTML concerns. Canonical and normalized packages never import rendering packages.
+The renderer must not:
+
+- inspect canonical JSON directly;
+- choose or substitute strategies;
+- infer harmony, voicing, hands, timing, pitch, or specificity;
+- generate learning chunks;
+- describe a treatment as final notation.
 
 ## 3. Input contracts
 
-### `ProjectedView`
-
-Contains:
-
-- selected arrangement, section, idea, event, learning-chunk, and lyric nodes;
-- exact rational temporal coordinates;
-- visible specificity states;
-- role and hand dimensions as separate fields;
-- repeated-family and variation relationships;
-- canonical harmony and subordinate hints;
-- provenance chains;
-- diagnostics safe for user display.
-
-### `LayoutOptions`
+### 3.1 `ProjectedView`
 
 ```text
-LayoutOptions {
-  viewportWidth: positive number;
-  density: "compact" | "balanced" | "expanded";
-  beatPresentation: strategy ID;
-  preferredBreaks?: StableId[];
-  showMeasureCoordinates: boolean;
+ProjectedView {
+  formatVersion: string;
+  arrangementId: StableId;
+  viewId: string;
+  extent: TimeSpan;
+  sections: ProjectedSection[];
+  events: ProjectedEvent[];
+  semanticOverlays: ProjectedOverlay[];
+  learningPlanRef?: VersionedContentRef;
+  diagnostics: Diagnostic[];
+  provenanceIndex: Record<string, ProvenanceChain>;
+}
+```
+
+Projected events contain semantic pitch/time values and visible metadata, but no final x/y/width/line break.
+
+### 3.2 `ResolvedRecipe`
+
+The rendering subsystem receives only a fully resolved recipe whose strategy versions/options are pinned and whose compatibility status is supported or explicitly permitted with limitations.
+
+### 3.3 `LayoutEnvironment`
+
+```text
+LayoutEnvironment {
+  viewportClass: "comparison-wide" | "print-preview";
+  scale: RationalOrCanonicalDecimal;
   locale: string;
-  fontScale: positive number
+  deterministicRoundingVersion: string;
 }
 ```
 
-Options are presentation-only. They may not determine chord analysis, voicing, hand assignment, or specificity.
+Sprint 1 avoids text-measurement-dependent semantic placement. Environment values affecting bytes are pinned in the manifest.
 
-### `RenderOptions`
+## 4. Strategy interfaces
+
+### 4.1 `TimeMappingStrategy`
 
 ```text
-RenderOptions {
-  documentTitle?: string;
-  includeStandaloneCss: boolean;
-  includeProvenanceManifest: boolean;
-  theme: "system" | "light" | "dark";
-  includeDiagnostics: boolean
+mapTime(input: {
+  extent: TimeSpan;
+  time: Rational;
+  environment: LayoutEnvironment;
+  options: JSONValue;
+}): MappedTime
+
+MappedTime {
+  x: LayoutScalar;
+  referenceCellId?: string;
 }
 ```
 
-Theme changes appearance only. Required distinctions remain visible in every theme.
+It maps onset only. It cannot alter event duration or order.
 
-## 4. Supported views
+### 4.2 `DurationEncodingStrategy`
 
-### 4.1 Full arrangement
+```text
+encodeDuration(input: {
+  start: Rational;
+  duration: Rational;
+  mappedStart: MappedTime;
+  timeMapper: TimeMappingStrategy;
+  options: JSONValue;
+}): DurationGeometry
 
-Shows all selected structural context and musical roles at the requested disclosure level. Harmony, bass, voicing, inversion, exact notes, patterns, lyrics, and learning annotations appear only when present and requested.
+DurationGeometry {
+  semanticEndX: LayoutScalar;
+  visibleStartX: LayoutScalar;
+  visibleEndX: LayoutScalar;
+  reinforcement?: ScenePrimitive[];
+}
+```
 
-### 4.2 Harmonic roadmap
+`semanticEndX` must preserve the exact mapped duration endpoint. A visible minimum hit area may extend around it only when distinguishable and declared; it may not replace the semantic edge.
 
-Emphasizes section/idea form, beat-aligned canonical harmony, repetitions, alternate endings, and major variations. It may suppress exact-note and voicing detail but cannot replace intentionally unspecified or unknown values with generic chords.
+### 4.3 `PitchMappingStrategy`
 
-### 4.3 Role-isolated view
+```text
+mapPitch(input: {
+  pitch: ResolvedSpecificValue<PitchValue>;
+  keyContext?: KeyContext;
+  previousPitch?: PitchValue;
+  options: JSONValue;
+}): MappedPitch
 
-Filters to one or more musical roles while retaining section labels, idea boundaries, time coordinates, repetitions, transitions, and relevant lyrics. Unrelated roles are hidden, not deleted from the source.
+MappedPitch {
+  y?: LayoutScalar;
+  laneId?: string;
+  relation?: PitchRelationSummary;
+}
+```
 
-### 4.4 Hand-separated and combined views
+A strategy declares whether it preserves absolute pitch, diatonic position, scale degree, interval, contour only, or a staff-like comparison. It cannot change the canonical pitch.
 
-Filters by resolved hand assignments while retaining original musical-role labels. Events with `both`, `either`, unknown, or intentionally unspecified assignment are represented according to explicit view policy; they are never silently assigned to a hand.
+### 4.4 `PitchLabelStrategy`
 
-### 4.5 Learning-chunk view
+Produces semantic text nodes from canonical pitch through registered formatters. It may display note name, scale degree, interval from prior event, chord-relative degree, or no visible label. Exact pitch must remain available in accessible text when the treatment contract requires it.
 
-Projects content referenced by selected chunks and displays prerequisite/transition context. Chunk boundaries may cross measures or sections. The view does not make chunk copies authoritative.
+### 4.5 Overlay strategies
 
-### 4.6 Arbitrary excerpt
+`StructuralOverlayStrategy` and `HarmonicOverlayStrategy` receive projected semantic overlays and produce scene nodes. Decorative options receive only already-computed scene data. Semantic overlays retain canonical IDs/provenance and may not be fabricated.
 
-Selects a rational time span and includes clipped structural/time context. Sounding events crossing the excerpt boundary remain visible with continuation indicators in derived layout metadata.
+### 4.6 `DisclosureStrategy`
 
-## 5. Semantic scene model
+Chooses visibility/emphasis among information already present and allowed by the recipe. It cannot convert unknown to hidden certainty or remove required accessibility text.
 
-`@mnls/layout` produces:
+## 5. Scene model
 
 ```text
 LayoutPlan {
   formatVersion: string;
-  view: LayoutViewMetadata;
-  groups: LayoutGroup[];
-  lanes: LayoutLane[];
-  nodes: LayoutNode[];
-  relationships: LayoutRelationship[];
-  readingOrder: string[];
-  manifest: LayoutManifest
+  viewId: string;
+  recipeRef: VersionedContentRef;
+  extent: LayoutExtent;
+  nodes: SceneNode[];
+  relationships: SceneRelationship[];
+  accessibility: AccessibilityPlan;
+  diagnostics: Diagnostic[];
+  inputHash: string;
+  optionsHash: string;
+}
+
+SceneNode {
+  id: string;
+  kind: "event" | "label" | "time-marker" | "structure" | "harmony" |
+        "specificity" | "learning-chunk" | "hint" | "decoration";
+  bounds?: { x: LayoutScalar; y: LayoutScalar; width: LayoutScalar; height: LayoutScalar };
+  semanticEndX?: LayoutScalar;
+  text?: string;
+  classes: string[];
+  sourceRefs: StableId[];
+  provenanceRefs: string[];
+  aria: AriaDescription;
 }
 ```
 
-Node kinds include section heading, idea heading, measure coordinate, beat cell, chord, inversion, slash bass, voicing, note, pattern label, repetition marker, ending, transition, lyric, specificity marker, hint, diagnostic, and continuation.
+Canonical data still contains no coordinates. Layout coordinates are disposable and recipe/version dependent.
 
-Node content is semantic display data derived from normalized values. Node geometry is derived and disposable. Relationships connect repeated families, variations, source/instance pairs, lyric anchors, and grouped harmony components.
+## 6. Required views
 
-## 6. Temporal layout
-
-- Beat and subdivision positions are computed from rational time.
-- Multiple chords in one measure occupy distinct temporal cells.
-- Syncopated events align to subdivision boundaries without inserted spaces.
-- Measures provide coordinate bands but do not force line, phrase, idea, or chunk breaks.
-- Events spanning cells use derived spans or continuation nodes.
-- Lyrics attach to event/time anchors and participate in collision handling.
-
-### Beat presentation strategy
-
-```text
-BeatPresentationStrategy {
-  id;
-  prepareTemporalGrid(projectedTime, options) -> TemporalGrid;
-}
-```
-
-Sprint 1 implements `explicit-grid@1`. A second test strategy proves replaceability but need not be learner-ready. Choosing final marks or punctuation remains outside Sprint 0.
-
-## 7. Adaptive density
-
-Density is based on visible semantic complexity, not uniform spacing. The layout engine uses priority tiers:
-
-1. canonical structure, time, and required musical events;
-2. required bass/inversion/voicing and major variations;
-3. suggested information;
-4. optional exact detail and annotations;
-5. pedagogical hints and diagnostics.
-
-Lower-tier content may move to an auxiliary row, collapse behind a textual summary in static output, or be omitted by an explicit view configuration. Required content and unknown/intentionally-unspecified states may not disappear due only to space pressure.
-
-## 8. Rendering musical distinctions
-
-### Harmony, inversion, slash bass, and voicing
-
-They render as separate semantic nodes grouped under one chord event. The canonical harmony label is first in accessible reading order. Inversion has its own labeled relation. Slash bass is explicitly labeled as bass. Voicing appears as exact pitches or constraints when valued, or as explicit unspecified/unknown state text when relevant.
-
-The renderer never creates a combined opaque symbol that makes these fields indistinguishable.
-
-### Specificity
-
-Each state has:
-
-- an explicit text label available to assistive technology;
-- a noncolor visual treatment such as border, icon shape, pattern, label, or typography;
-- a stable CSS/data token;
-- no conversion to another state when hidden by a view.
-
-### Repetition and variation
-
-Repeated-family nodes share a stable relationship ID and visual treatment. Variations identify the common source and the changed material. Alternate endings render as distinct branches tied to the repeated source.
-
-### Familiar-shape hints
-
-- canonical harmony remains primary in DOM order and visual hierarchy;
-- hint is labeled as a learning hint, not an alternate analysis;
-- bass and equivalence class are available in accessible text;
-- suppressed hints do not render as active hints;
-- hiding hints changes no other node, timing, or layout meaning beyond reclaimed space;
-- generated hints require explicit render input and are never generated by the renderer itself.
-
-## 9. HTML/SVG structure
-
-Recommended structure:
-
-```text
-<main>
-  <header>document and arrangement identity</header>
-  <nav aria-label="Arrangement structure">...</nav> (when useful)
-  <section data-section-id="...">
-    <h2>...</h2>
-    <div role="group" aria-label="Musical idea ...">
-      semantic HTML labels and an SVG temporal canvas
-    </div>
-  </section>
-</main>
-```
-
-SVG is used for temporal geometry and connecting relationships. Essential text remains selectable/searchable and receives accessible labels. Purely decorative SVG elements use `aria-hidden="true"`.
-
-No script is required for Prototype 1 output.
-
-## 10. Safe serialization
-
-- User text is inserted through text nodes or escaped serializer APIs.
-- Canonical text never becomes raw HTML, CSS, URL, element name, or attribute name.
-- Data attributes use sanitized deterministic IDs.
-- SVG `href`, external images, foreign objects, event-handler attributes, and embedded scripts are prohibited.
-- CSS values are selected from renderer-owned tokens, not user input.
-- A content-security-policy-compatible output is required.
-
-## 11. Accessibility requirements
-
-- Logical reading order matches musical/structural order.
-- Each view has a descriptive title and summary.
-- Section, idea, chunk, and ending boundaries use headings/groups.
-- Beat/subdivision location is available as text, not position alone.
-- Required distinctions do not rely on color.
-- Canonical chord, bass, inversion, voicing, hint, and specificity labels are exposed.
-- Repeated relationships and variations are described textually.
-- SVG has a title/description when not redundant with adjacent HTML.
-- Minimum target sizing and focus styles are preserved for any future controls, though Sprint 1 output is static.
-- Automated checks are supplemented by keyboard/screen-reader review before learner evaluation.
-
-## 12. Determinism and output bundle
-
-Output bundle:
-
-```text
-out/
-  index.html
-  styles.css            # optional embedded equivalent
-  render-manifest.json
-  diagnostics.json      # when requested
-```
-
-Byte stability requires fixed attribute ordering, line endings, number formatting, CSS token order, and derived node IDs. No timestamps are included unless explicitly passed as nonsemantic build metadata excluded from snapshots.
-
-## 13. Failure behavior
-
-- Unknown view kind: error.
-- Unsupported beat strategy: error.
-- Missing layout source node: internal invariant error with provenance.
-- Content overflow: warning plus deterministic fallback; never silent clipping of required content.
-- Missing formatter capability: error identifying pitch strategy and canonical ID.
-- Unsafe text: safely escaped; not an error unless forbidden control characters are present.
-- Accessibility invariant failure in test mode: test error.
-
-The renderer does not recover from invalid music by guessing.
-
-## 14. Sprint 1 rendering slice
-
-Implement:
+The architecture continues to support:
 
 - full arrangement;
 - harmonic roadmap;
-- isolated primary line;
-- isolated harmony;
-- explicit beat grid;
-- sections, ideas, repetitions, alternate ending;
-- note events;
-- canonical chord plus separate slash bass, inversion, and voicing nodes;
-- all five specificity states;
-- authored exact `Am7` → `C/A` hint shown/hidden;
-- HTML escaping and provenance manifest.
+- role-isolated views;
+- separated and combined hands;
+- learning-plan chunks;
+- arbitrary excerpts.
 
-Defer:
+Sprint 1 implements melody treatment views and the minimal comparison page. Harmony, role, hand, repetition, voicing, and hint distinctions remain covered by model/projection contract tests and retained fixture validation; broader functional rendering may proceed in Sprint 2 as detailed in Sprint 1.
 
-- hand views beyond contract-level tests unless Fixture C requires them;
-- polished adaptive-density variants;
-- generated hints;
-- automatic pagination;
-- final visual vocabulary.
+## 7. Functional Sprint 1 treatments
 
-## 15. Tests
+### 7.1 Explicit beat-grid baseline
 
-- DOM semantic assertions for every visible construct;
-- canonical-first order for hint fixture;
-- show/hide hint output comparison proving no music changes;
-- role filter retains structural/time context;
-- hand filter does not relabel roles;
-- multi-chord and syncopated beat positions;
-- repeated-source data relationships;
-- unknown versus intentionally unspecified text and CSS tokens;
-- malicious lyric/title escaping;
-- deterministic output snapshots with semantic assertions;
-- accessible-name and duplicate-ID checks;
-- no color-only distinction audit.
+**Time mapping:** `mnls.time.fixed-beat-grid@1`. Each beat is divided into a configured integer subdivision count. Rational onsets must land on representable cells or the strategy returns `TIME_GRID_RESOLUTION_INSUFFICIENT`; it does not round silently.
 
-## 16. Rejected alternatives
+**Duration encoding:** `mnls.duration.grid-span@1`. The event spans from its onset cell boundary to the exact mapped end boundary. Sustains crossing cells are visibly continuous.
 
-- Canvas-only output: rejected for accessibility and inspectability.
-- SVG-only document: rejected because headings, navigation, and text structure are better expressed in HTML.
-- CSS whitespace chord alignment: rejected as semantically ambiguous.
-- Renderer-generated harmony or voicing: rejected because renderer cannot own semantics.
-- One combined chord label for harmony/bass/inversion/voicing: rejected because distinctions would collapse.
-- Color-only specificity: rejected for accessibility.
-- Hidden hints implemented by deleting/replacing canonical harmony: rejected because visibility must be removable without musical change.
+**Pitch mapping:** `mnls.pitch.absolute-chromatic-y@1`. Equal spelled/enharmonically resolved semantic pitch according to the strategy's comparison contract maps to equal y. Sprint 1 uses exact register-bearing pitch.
+
+**Labels:** exact pitch text visible and in accessible description.
+
+**Markers:** beats and configured subdivisions are explicit SVG/HTML nodes, not spaces in text.
+
+### 7.2 Proportional spatial melody
+
+**Time mapping:** `mnls.time.proportional@1`.
+
+```text
+x(t) = leftInset + canonicalDecimal(t * unitsPerBeat)
+```
+
+**Duration encoding:** `mnls.duration.proportional-extent@1`.
+
+```text
+semanticEndX = x(start + duration)
+width = semanticEndX - x(start)
+```
+
+**Pitch mapping:** `mnls.pitch.absolute-chromatic-y@1`.
+
+```text
+y(p) = pitchOrigin - semitoneIndex(p) * unitsPerSemitone
+```
+
+The strategy pins spelling/comparison behavior and octave calculation through the canonical pitch interface. Equal pitch produces equal y; larger semitone intervals produce larger absolute vertical displacement. Higher pitch is visually higher.
+
+**Labels/accessibility:** exact pitch and exact onset/duration are available in visible labels or event accessible text. Basic duration is recoverable from horizontal extent without stems, flags, or conventional duration symbols.
+
+### 7.3 Shared-source guarantee
+
+Both treatments consume the same `NormalizedArrangement` and `ProjectedView` content selection. Treatment differences are entirely in resolved recipes and layout strategies. Tests compare the canonical input hash before/after both runs and reject treatment-specific event payloads in recipes.
+
+## 8. Time, pitch, and duration independence
+
+Time mapping, pitch mapping, and duration encoding are selected separately. Compatibility rules prevent nonsensical combinations, but one strategy cannot implicitly select another.
+
+Examples:
+
+- proportional time + fixed-width duration labels is architecturally possible if the duration strategy remains truthful;
+- contour-only pitch mapping + exact labels is possible only when the independent label strategy can access exact canonical pitch and the recipe declares that combination;
+- fixed beat grid + proportional event extent is possible when extent maps to cell boundaries;
+- a duration strategy requiring exact duration is incompatible with unknown duration.
+
+## 9. Structural and semantic overlays
+
+Supported overlay boundaries include:
+
+- measure coordinates;
+- beat/subdivision markers;
+- section, phrase, and musical-idea boundaries where canonical data exists;
+- repetition/variation family relationships;
+- harmony and bass/inversion/voicing distinctions;
+- musical roles;
+- hand assignments including unknown/unspecified state;
+- learning-plan chunks;
+- pedagogical hints subordinate to canonical harmony.
+
+A recipe may independently enable overlays. An overlay strategy must declare required canonical/plan capabilities.
+
+## 10. Specificity rendering
+
+Every visible `SpecificValue` state has a non-color textual/shape/class treatment. The exact visual vocabulary is experimental and recipe controlled, but the semantic DOM includes stable state text:
+
+- required;
+- suggested;
+- optional;
+- intentionally unspecified;
+- unknown/not entered.
+
+A disclosure strategy may hide optional values only when the recipe requests it; it may not hide the fact that required information is unknown if that state is relevant to the requested view.
+
+## 11. HTML/SVG structure
+
+A treatment bundle uses semantic HTML around SVG:
+
+```text
+main
+  header: arrangement, treatment name/version, status, limitations
+  nav: comparison/treatment links when applicable
+  section: structural context
+  section: visual treatment (SVG)
+  section: accessible event table/list
+  details: recipe, strategies, provenance, diagnostics
+```
+
+SVG elements use deterministic sanitized IDs and `data-source-id`, `data-role`, `data-specificity`, `data-strategy`, and provenance references where appropriate. Source order follows musical time, not visual layering order.
+
+## 12. Safe serialization
+
+- no untrusted `innerHTML`;
+- escape all text/attributes;
+- sanitize deterministic SVG IDs;
+- no scripts in Sprint 1 generated output;
+- no external resources or URL fetching;
+- renderer options cannot inject CSS/markup;
+- fixed project CSS classes only, with recipe options mapped to allowlisted tokens.
+
+## 13. Accessibility
+
+- exact pitch/time/duration text for melody events;
+- treatment and limitation descriptions before the visualization;
+- keyboard-readable source-order event list/table;
+- SVG title/description and per-group accessible names as practical;
+- no information carried by color alone;
+- focus order matches musical/source order;
+- zoom/reflow does not remove semantic information;
+- repeated pitch and interval direction described textually for the spatial treatment where useful;
+- learning chunks and overlays have text equivalents.
+
+## 14. Determinism and output bundle
+
+Coordinate serialization uses exact rational-to-decimal conversion under a pinned rounding version. Output node ordering is semantic time then stable source/derived ID. No font metrics, wall-clock time, random IDs, browser viewport measurements, or locale defaults influence hashed output.
+
+Bundle:
+
+```text
+index.html
+manifest.json
+diagnostics.json
+provenance.json
+resolved-recipe.json
+learning-plan.json        # optional
+```
+
+The workbench comparison bundle includes one subdirectory per treatment and a deterministic top-level comparison page.
+
+## 15. Failure behavior
+
+- missing exact onset/duration for required treatment: error;
+- onset not representable in selected grid: error with required minimum subdivision evidence;
+- unsupported pitch strategy/payload: error;
+- unknown hand assignment for exact hand isolation: error, not inferred assignment;
+- missing optional overlay capability: limitation or error according to recipe policy;
+- false familiar-shape equivalence: error/suppression before renderer;
+- coordinate overflow/invalid scale: error;
+- missing accessible exact pitch for required melody treatment: error.
+
+## 16. Tests
+
+- strategy descriptor/implementation conformance;
+- mathematical time/pitch/duration invariants;
+- grid subdivision rejection rather than rounding;
+- repeated pitch equal y;
+- higher pitch smaller visual y coordinate;
+- interval magnitude monotonic displacement;
+- exact onset/duration proportional geometry;
+- same canonical hash across treatments;
+- no recipe musical payload;
+- deterministic scene and HTML bytes;
+- semantic DOM assertions for pitch/time/duration/status;
+- accessibility tree/source-order assertions;
+- escaping/property-based malicious text tests;
+- specificity and harmony/hint distinction tests;
+- compatibility prevents unsupported combinations before layout.
+
+## 17. Rejected alternatives
+
+- one `renderMode` switch with hard-coded branches;
+- storing coordinates in canonical music;
+- tying duration encoding to pitch mapping;
+- silent grid rounding;
+- relying on conventional note-value glyphs in the spatial treatment;
+- canvas-only output without semantic parallel content;
+- renderer fallback to an available strategy;
+- screenshot snapshots as the only validation;
+- labeling either Sprint 1 treatment as the final notation system.

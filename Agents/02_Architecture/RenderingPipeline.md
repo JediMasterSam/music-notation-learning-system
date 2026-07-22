@@ -1,268 +1,315 @@
 # Rendering Pipeline
 
-Status: Architecture Sprint 0 complete — proposed for review
+Status: Architecture Sprint 0.1 complete — proposed for review  
+Architecture baseline: 0.2
 
 ## 1. Purpose
 
-The rendering pipeline converts canonical semantic data into deterministic, accessible static HTML/SVG while preserving meaning, specificity, structural context, and provenance. Every stage is pure from the caller’s perspective and returns data plus diagnostics. Canonical input is never mutated.
+The pipeline converts one canonical arrangement into one or more reproducible visual treatments selected by declarative recipes. It may also consume a derived learning plan. It never mutates canonical music, silently resolves incompatibility, or selects a final notation system.
 
-Linked requirements: R-004, R-007, R-011–R-014, R-020–R-041, R-049.
+Related requirements: R-004, R-007, R-011–R-014, R-025–R-041, R-047–R-050. Amendment source: Architecture Sprint 0.1 handoff §§3–10.
 
 ## 2. Stage overview
 
 ```text
-1. Load
-2. Structural validation
-3. Semantic validation
-4. Reference resolution
-5. Pattern/repetition/variation normalization
-6. Optional semantic transposition
-7. View projection
-8. Layout preparation
-9. Accessible HTML/SVG rendering
-10. Diagnostic/provenance emission
+1.  Artifact load
+2.  Structural validation
+3.  Canonical semantic validation
+4.  Canonical reference resolution
+5.  Musical normalization
+6.  Optional semantic transposition
+7.  Arrangement capability analysis
+8.  Recipe and optional learning-plan load
+9.  Strategy discovery and recipe resolution
+10. Compatibility validation
+11. View projection
+12. Strategy-driven layout preparation
+13. Accessible HTML/SVG rendering
+14. Manifest, diagnostics, and provenance output
 ```
 
-Stages 1–5 produce the reusable normalized semantic timeline. Stages 7–9 are presentation derivations. Stage 6 may occur on canonical or normalized data, but Sprint 1 uses canonical transposition followed by a fresh normalization to prove semantic equivalence.
+Learning-plan generation is a sibling derived pipeline between stages 7 and 8:
+
+```text
+normalized arrangement + capability profile
+  + transformation definition + parameters
+  -> transformation compatibility
+  -> deterministic LearningPlan
+  -> optional plan-local overrides
+```
+
+Experiment execution orchestrates the pipeline once per fixture/treatment pair and then produces a comparison index and run manifest.
 
 ## 3. Shared stage contract
 
 ```text
 PipelineContext {
-  schemaRegistry;
-  pitchRegistry;
-  patternRegistry;
-  options;
-  inputIdentity;
+  canonicalInputHash: string;
+  canonicalSchemaVersion: string;
+  registries: RegistryVersionSet;
+  deterministicOptions: JSONValue;
+  diagnostics: Diagnostic[];
 }
 
 StageResult<T> =
-  | { ok: true; value: T; diagnostics: Diagnostic[]; metrics?: StageMetrics }
-  | { ok: false; diagnostics: Diagnostic[]; partial?: DiagnosticOnlyArtifact }
+  | { ok: true; value: T; diagnostics: Diagnostic[] }
+  | { ok: false; diagnostics: Diagnostic[] }
 ```
 
-- Stages do not print, write files, or terminate the process.
-- Diagnostics are stable data structures.
-- Error severity blocks the next semantic stage.
-- Warning severity never authorizes a default or semantic repair.
-- Inputs are treated as readonly and may be deep-frozen in tests.
+All inputs are treated as immutable. Stages are pure except load/output adapters. Warnings and explicit limitations may accompany success. Error-severity diagnostics stop dependent stages.
 
-## 4. Stage 1 — Canonical document load
+## 4. Stage 1 — Artifact load
 
-**Owner:** `@mnls/model` with file adapter in `@mnls/cli`.  
-**Input:** UTF-8 file bytes or already parsed JSON value.  
-**Output:** parsed JSON plus source identity/hash.  
-**Responsibilities:** reject invalid UTF-8, duplicate JSON keys where detectable, unsupported top-level media type, excessive input size, and non-JSON values.  
-**Nonresponsibilities:** no schema repair, semantic inference, or migration.  
-**Failure codes:** `LOAD_PARSE`, `LOAD_ENCODING`, `LOAD_SIZE`, `LOAD_DUPLICATE_KEY`.
+**Inputs:** canonical JSON path; recipe path; optional learning-plan or transformation path; optional experiment definition.  
+**Outputs:** parsed JSON values and content hashes.  
+**Guarantees:** UTF-8, duplicate-key detection where parser support permits, no expression evaluation, no URL fetching.  
+**Errors:** unreadable file, malformed JSON, unsupported size limit, path traversal, hash mismatch in reproduction mode.
 
-The CLI resolves paths and prevents traversal. The model package never performs arbitrary file-system access.
+The loader does not infer artifact type solely from file extension. Each root declares `documentType` or `formatVersion`/schema identity.
 
 ## 5. Stage 2 — Structural validation
 
-**Owner:** `@mnls/schema`.  
-**Input:** parsed JSON.  
-**Output:** branded structurally valid document.  
-**Responsibilities:** schema version selection, JSON Schema 2020-12 validation, discriminated specificity unions, required fields, enums, numeric/rational shape, extension namespaces.  
-**Failure behavior:** all practical schema errors are collected in deterministic JSON-pointer order.  
-**Invariant:** no semantic validation rule exists only in TypeScript if JSON Schema can express it.
+Each artifact validates against its own JSON Schema 2020-12 family:
 
-Unknown schema versions stop the pipeline with `SCHEMA_UNSUPPORTED_VERSION`; no silent migration occurs.
+- canonical document;
+- representation recipe;
+- learning transformation definition;
+- learning plan;
+- experiment definition;
+- run/reproduction manifest.
 
-## 6. Stage 3 — Semantic validation
+Structural validation applies no musical or compatibility defaults. Recipe/transformation option defaults are handled only after the selected implementation's option schema is known.
 
-**Owner:** `@mnls/validator`.  
-**Input:** structurally valid canonical document and registries.  
-**Output:** validated immutable canonical document plus reference index.  
-**Validation pass order:**
+## 6. Stage 3 — Canonical semantic validation
 
-1. stable ID uniqueness and typed reference existence;
-2. song/arrangement linkage;
-3. rational time, measures, spans, and extent;
-4. section, idea, transition, and learning-chunk relationships;
-5. role and hand separation;
-6. pitch strategy payload and capability validation;
-7. harmony, inversion, slash bass, and voicing checks;
-8. pattern definition/instance checks;
-9. repetition/variation cycles and override targets;
-10. lyric anchors;
-11. familiar-shape hint classification and suppression rules;
-12. corpus source-policy checks when corpus mode is enabled.
+Validation order remains:
 
-No pass changes data. A validator may recommend a correction in a diagnostic hint but cannot apply it.
+1. stable ID uniqueness and typed references;
+2. rational time, meter map, measure coordinates, arrangement extent;
+3. role and hand separation;
+4. chord analysis, inversion, slash bass, and voicing independently;
+5. specificity-state contradictions;
+6. repetition, variation, pattern, and transition graphs;
+7. familiar-shape hint equivalence and suppression rules;
+8. corpus source-policy checks where applicable.
 
-## 7. Stage 4 — Reference resolution
+No recipe or learning transformation may weaken canonical validation.
 
-**Owner:** `@mnls/normalizer`.  
-**Input:** validated canonical document and arrangement ID.  
-**Output:** immutable resolved graph with typed object handles and unresolved-data diagnostics absent.  
-**Responsibilities:** resolve song, role, hand assignment, section, idea, event, pattern, repetition, variation, ending, transition, chunk, and lyric references.  
-**Guarantees:**
+## 7. Stage 4 — Canonical reference resolution
 
-- source object identity remains visible;
-- resolution order does not depend on object-map iteration;
-- cycles are reported with the complete stable-ID path;
-- no repeated or pattern material is expanded yet.
+Produces an immutable typed index and resolution graph. It validates reference kind, scope, cycles, and source relationships but does not duplicate repeated material or assign display order beyond canonical ordering rules.
 
-## 8. Stage 5 — Normalization
+Every resolved edge records source JSON pointer and canonical IDs for later diagnostics/provenance.
 
-**Owner:** `@mnls/normalizer`, delegating patterns to `@mnls/patterns`.  
-**Input:** resolved graph and normalization options.  
-**Output:** `NormalizedArrangement`.  
-**Substages:**
+## 8. Stage 5 — Musical normalization
 
-1. establish deterministic arrangement extent and measure coordinates;
-2. place direct events;
-3. expand document-local and registered pattern instances;
-4. place repetition references;
-5. apply variations and alternate endings in canonical operation order;
-6. resolve inherited role and hand assignments without changing either concept;
-7. preserve all specificity wrappers;
-8. sort events by start, duration, source order, and derived ID;
-9. build full provenance chains;
-10. calculate content hash, options hash, and normalized format version.
+Produces `NormalizedArrangement` by:
 
-**Override precedence:** canonical direct event value < pattern parameter < pattern instance override < variation operation. A later layer may change only allowlisted fields and must add provenance. It may not change stable source IDs, erase unknown/unspecified states silently, or reinterpret harmony.
+- reducing exact rational values;
+- expanding pattern instances through the pattern engine;
+- materializing repetitions, variations, alternate endings, and transitions;
+- resolving role and hand assignments without collapsing them;
+- preserving all `SpecificValue` states;
+- appending deterministic provenance steps;
+- sorting events by exact onset, then source order/stable ID.
 
-**Cycle/depth controls:** pattern/repetition graphs must be acyclic. Nested pattern expansion is permitted to a configurable technical limit; reaching the limit is an error, not truncation.
+Normalization does not produce learning chunks, choose a recipe, compute pixels, or generate display labels.
 
-## 9. Stage 6 — Semantic transposition
+## 9. Stage 6 — Optional semantic transposition
 
-**Owner:** `@mnls/transposition` and `@mnls/pitch`.  
-**Input:** canonical or normalized document and semantic operation.  
-**Output:** a new semantically transposed document plus diagnostics.  
-**Operation examples:** interval, source key to target key, or strategy-supported mapping.  
-**Rules:**
+Transposition operates through the canonical pitch strategy and semantic interval/key operations. It does not rewrite rendered labels.
 
-- transpose pitch values, chord roots, applicable alterations, slash bass, exact voicing pitches, note events, pattern pitch parameters, and familiar-shape hints;
-- preserve IDs, time, form, roles, hands, repetitions, chunks, and structural relationships;
-- recompute or revalidate exact hint equivalence;
-- do not rewrite display labels;
-- unsupported strategy capability is an error identifying the affected canonical ID.
+Preserved invariants:
 
-**Metamorphic guarantee:** transpose then normalize must be semantically equivalent to normalize then transpose for constructs declaring commutativity. Any exception must be strategy-documented and covered by an ADR amendment.
+- IDs and rational time;
+- form, ideas, roles, hand assignments, patterns, repetition, variations, and provenance;
+- specificity states;
+- learning-plan selectors and relationships when a plan is regenerated/applied to the transposed arrangement;
+- hint classification after recomputation/revalidation.
 
-## 10. Stage 7 — View projection
+A transformation/recipe run manifest records whether transposition preceded capability analysis and the exact target.
 
-**Owner:** `@mnls/projection`.  
-**Input:** normalized arrangement and `ViewSpec`.  
-**Output:** `ProjectedView` retaining timing, structure, specificity, and provenance.  
-**ViewSpec:**
+## 10. Stage 7 — Arrangement capability analysis
+
+The analyzer computes evidence-backed capabilities from the validated normalized arrangement. It does not accept recipe claims as evidence.
+
+Examples:
+
+- exact register-bearing pitch available for all selected note events;
+- exact onset/duration available;
+- sections or musical ideas present;
+- hand assignments complete/partial/unknown;
+- harmony/pitch-class-set comparison available.
+
+Output is deterministic and hashable. Capability diagnostics include canonical evidence refs.
+
+## 11. Learning-plan generation sibling pipeline
+
+When a run requests a transformation rather than an existing verified plan:
+
+1. load and structurally validate the definition;
+2. resolve its pinned implementation;
+3. validate/materialize parameters;
+4. compare required capabilities with the profile;
+5. execute deterministically;
+6. validate reference-only chunks and relationship graphs;
+7. apply plan-local overrides in stable order;
+8. compute plan/provenance hashes;
+9. optionally verify regeneration byte-for-byte.
+
+The result is a derived `LearningPlan`. Failure does not affect the canonical arrangement. A rendering recipe that requires a plan is incompatible when no valid plan is supplied/generated.
+
+## 12. Stage 8 — Recipe and optional learning-plan load
+
+Recipe identity, version, content hash, and option values are retained. A supplied learning plan is verified against arrangement ID/hash, transformation definition hash, and deterministic regeneration when requested.
+
+Stale plans do not silently retarget to a changed arrangement.
+
+## 13. Stage 9 — Strategy discovery and recipe resolution
+
+The composition root registers built-in strategy descriptors and implementations. Resolution:
+
+- pins exact ID/version;
+- validates option JSON against each strategy schema;
+- materializes only declared presentation defaults;
+- canonicalizes option ordering;
+- produces `ResolvedRecipe` with a resolution hash.
+
+Missing pinned versions produce `unavailable`, never an upgrade.
+
+## 14. Stage 10 — Compatibility validation
+
+Compatibility combines:
+
+- arrangement capability profile;
+- optional plan capabilities;
+- selected strategy requirements/provisions;
+- cross-strategy conflicts;
+- renderer support;
+- explicit limitation policy.
+
+Classification:
+
+- `supported` — proceed;
+- `supported-with-limitations` — proceed only when every limitation class is explicitly accepted and visibly reported;
+- `incompatible` — stop;
+- `unavailable` — stop.
+
+Examples:
+
+- proportional duration with unknown duration: incompatible;
+- exact hand isolation with unknown assignment: incompatible;
+- displaying hand-assignment state without isolation: supported with visible unknown-state limitation;
+- contour-only pitch mapping plus requested exact pitch labels: incompatible unless an independent exact-pitch label provider has access to canonical pitch and declares compatibility.
+
+No stage falls back to another strategy.
+
+## 15. Stage 11 — View projection
 
 ```text
-ViewSpec {
-  kind: "full" | "harmonic-roadmap" | "role" | "hand" | "learning-chunk" | "excerpt";
-  roleIds?: StableId[];
-  hands?: HandName[];
-  learningChunkIds?: StableId[];
+ProjectionInput {
+  arrangement: NormalizedArrangement;
+  recipe: ResolvedRecipe;
+  learningPlan?: LearningPlan;
   excerpt?: TimeSpan;
-  includeHints?: boolean;
-  disclosure?: DisclosureOptions;
 }
 ```
 
-Projection may hide detail but never change semantic values. It keeps enough section, idea, measure, and beat context for place-keeping. Hiding hints only removes hint nodes. Hand projection consults hand assignments; it never converts hand into role.
+Projection may filter roles/hands, select excerpts, expose learning-plan chunks, and add semantic overlays. It preserves temporal/structural context required by the recipe and cannot reinterpret harmony or alter canonical values.
 
-**Failure behavior:** invalid role/chunk IDs or empty contradictory filters produce `VIEW_*` diagnostics. A legitimately empty excerpt is a successful empty view with an informational diagnostic.
+Projected nodes include semantic IDs, source IDs, exact time/pitch values where available, specificity, role/hand data, learning-plan references, and provenance. They contain no final coordinates.
 
-## 11. Stage 8 — Layout preparation
+## 16. Stage 12 — Strategy-driven layout preparation
 
-**Owner:** `@mnls/layout`.  
-**Input:** projected view, layout options, and beat-presentation strategy.  
-**Output:** renderer-neutral `LayoutPlan`.  
-**Responsibilities:**
+Layout composes the selected time, pitch, duration, label, overlay, disclosure, and renderer-neutral scene strategies.
 
-- create structural groups for sections/ideas/endings;
-- create temporal grid cells from rational beats/subdivisions;
-- allocate semantic lanes for harmony, bass, voicing, primary line, accompaniment, rhythm, lyrics, and annotations as required by the view;
-- assign content priority for adaptive density;
-- compute break opportunities and derived coordinates;
-- expose repeated-family and variation relationships;
-- create text alternatives and accessible reading order.
+### Explicit grid treatment
 
-The layout package may calculate pixels, rows, columns, and break decisions only in the derived plan. It cannot add chord tones, infer voicing, generate hints by default, or alter specificity.
+- x positions derive from beat/subdivision cells;
+- widths/spans derive from exact duration cells;
+- beat/subdivision boundaries are explicit;
+- pitch y mapping is consistent and exact pitch text remains available.
 
-Beat presentation is strategy-based. Sprint 1 implements one explicit grid treatment and keeps at least one alternate strategy stub/test double for E-003 comparison; no final notation punctuation is selected.
+### Proportional spatial melody treatment
 
-## 12. Stage 9 — HTML/SVG rendering
+- x derives linearly from exact onset;
+- event duration edge/extent derives linearly from exact duration;
+- y derives deterministically from semantic pitch;
+- equal pitch maps to equal y;
+- interval magnitude maps monotonically to vertical displacement;
+- no stem/flag/symbol is required to recover basic duration.
 
-**Owner:** `@mnls/renderer-html`.  
-**Input:** layout plan and render options.  
-**Output:** `RenderedBundle { html, css?, assets?, manifest }`.  
-**Responsibilities:** deterministic safe serialization, semantic HTML structure, SVG geometry, text escaping, accessible names/descriptions, and renderer manifest.  
-**Rules:**
+Layout may apply deterministic scaling, margins, lane allocation, and break opportunities. It may not change musical time/pitch or hide an acknowledged limitation.
 
-- canonical harmony is visually and semantically primary;
-- slash bass, inversion, and voicing are separate labeled nodes;
-- specificity distinctions have noncolor text/shape/state markers;
-- familiar-shape hints are subordinate and removable;
-- lyrics are aligned through temporal anchors, not spaces;
-- repeated material shares classes/data attributes and explicit source references;
-- output contains canonical source IDs only as escaped data attributes or manifest entries;
-- scripts are absent in Prototype 1 static output unless separately approved.
+## 17. Stage 13 — Accessible HTML/SVG rendering
 
-## 13. Stage 10 — Diagnostics and provenance output
+The renderer consumes only the layout plan and resolved render options. It:
 
-The CLI can emit human text or JSON reports. Render output includes a manifest:
+- escapes all text;
+- emits semantic headings/landmarks and treatment metadata;
+- emits accessible names/descriptions and source-order event text;
+- preserves canonical chord priority over hints;
+- distinguishes specificity without color-only coding;
+- labels the treatment as experimental/comparison;
+- includes recipe/strategy versions and limitations.
+
+Renderer output cannot modify the manifest or decide compatibility.
+
+## 18. Stage 14 — Manifest, diagnostics, and provenance output
+
+Each treatment bundle contains:
 
 ```text
-RenderManifest {
-  rendererVersion;
-  layoutFormatVersion;
-  normalizedFormatVersion;
-  canonicalDocumentId;
-  arrangementId;
-  canonicalInputHash;
-  optionsHash;
-  viewSpec;
-  diagnosticSummary;
-  renderedNodeSources: { [renderNodeId]: ProvenanceChain }
-}
+index.html
+scene.svg (or embedded SVG)
+manifest.json
+diagnostics.json
+provenance.json
+resolved-recipe.json
+learning-plan.json       # when used; derived
 ```
 
-This makes every visible derived node traceable without embedding the full canonical document into HTML.
+The manifest records canonical/normalized hashes, recipe hash, all strategy versions/options, optional learning plan/transformation hashes, tool/package versions, output hashes, compatibility status, limitations, and deterministic run hash.
 
-## 14. Determinism controls
+Experiment runs add `experiment-run.json` and a comparison `index.html` linking all treatments.
 
-- rational arithmetic only for musical time;
-- no current time, locale default, random ID, or filesystem-order dependency;
-- locale and spelling context are explicit render options;
-- stable serializer and key order;
-- stable CSS class/token generation;
-- font metrics are not used to make semantic choices;
-- snapshots normalize platform-specific path separators and line endings.
+## 19. Determinism controls
 
-## 15. Error recovery policy
+- exact rational arithmetic until deterministic coordinate serialization;
+- fixed decimal rounding policy owned by layout format version;
+- canonical JSON serializer;
+- stable registry/diagnostic ordering;
+- no timestamps in hashed output (optional human metadata stored outside hash authority);
+- pinned fonts are not required; text metrics cannot determine semantic coordinates in Sprint 1 treatments;
+- no locale-dependent number or pitch formatting unless locale is a pinned option.
 
-- Load/schema/semantic errors stop normalization.
-- Normalization errors stop projection/rendering.
-- Projection errors stop layout.
-- Layout/render warnings may still produce output if semantic meaning remains unambiguous.
-- The renderer never substitutes a generic chord, root-position voicing, or guessed note for invalid/unknown data.
-- In diagnostic-preview mode, invalid nodes may render as explicit error placeholders, never as plausible music.
+## 20. Error recovery policy
 
-## 16. Tests
+Diagnostic-only commands may continue independent validations. Rendering never continues after semantic error, recipe incompatibility, unavailable strategy, invalid plan, or unacknowledged limitation. One failed treatment in a multi-treatment experiment does not corrupt other outputs; the experiment run fails overall and records per-treatment status.
 
-| Pipeline concern | Required test |
-|---|---|
-| immutability | deep-freeze canonical input; all stages succeed without mutation |
-| specificity | five states survive normalize, transpose, project, render manifest |
-| provenance | direct, pattern, override, repeat, variation, and transpose chains |
-| determinism | repeated runs produce byte-identical normalized JSON and HTML |
-| semantic separation | inversion, slash bass, and voicing independently absent/present |
-| hint safety | canonical harmony unchanged with hints shown/hidden/suppressed |
-| escaping | malicious lyric/title text appears as text, never markup/script |
-| accessibility | DOM has names, logical order, noncolor state text, valid IDs |
-| timing | syncopated and multi-chord measure aligns without whitespace |
-| transposition | AT-008 invariants and strategy capability failures |
+## 21. Tests
 
-## 17. Rejected alternatives
+- canonical immutability across every stage;
+- structural/semantic validation order;
+- five specificity states survive normalization, transposition, projection, both layouts, and DOM;
+- provenance traces every rendered event to canonical IDs plus transformation/recipe where applicable;
+- recipe resolution exact-version and default-materialization tests;
+- all compatibility classifications and no-fallback assertions;
+- learning-plan generation/verification and no-copy assertions;
+- same fixture, two recipes, distinct deterministic scene outputs;
+- explicit-grid exact onset/duration assertions;
+- proportional x/width/y mathematical invariants;
+- experiment rerun byte identity and hash mismatch failure;
+- escaping and accessibility checks;
+- canonical harmony remains primary over familiar-shape hint.
 
-- direct canonical-to-HTML rendering;
-- renderer-side reference and pattern expansion;
-- normalization that overwrites source IDs;
-- layout metadata stored back into canonical JSON;
-- string-based transposition;
-- warning-based fallback to guessed voicing;
-- generated hints inserted during normalization without explicit option;
-- whitespace as beat or lyric alignment.
+## 22. Rejected alternatives
+
+- inserting recipe resolution into the canonical loader;
+- generating learning chunks during normalization;
+- allowing layout to request missing musical defaults;
+- renderer-selected strategy fallbacks;
+- treatment-specific canonical fixtures;
+- floating-point timing before exact mapping;
+- screenshots without manifests or semantic DOM assertions;
+- one monolithic render function that owns projection, compatibility, layout, and serialization.

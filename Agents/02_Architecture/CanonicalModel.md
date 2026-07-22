@@ -1,11 +1,12 @@
 # Canonical Model
 
-Status: Architecture Sprint 0 complete — proposed for review  
-Canonical schema target: 0.1.0
+Status: Architecture Sprint 0.1 complete — proposed for review  
+Canonical schema target: 0.1.0  
+Architecture baseline: 0.2
 
 ## 1. Model purpose
 
-The canonical model stores authoritative musical meaning independently of any learner-facing notation, renderer, or final punctuation. It supports exact notes and higher-level musical intent, preserves reusable sources and explicit differences, and keeps all experimental representations replaceable.
+The canonical model stores authoritative musical meaning independently of any learner-facing notation, learning plan, experiment treatment, renderer, or final punctuation. It supports exact notes and higher-level musical intent, preserves reusable sources and explicit differences, and keeps all experimental representations and pedagogical transformations replaceable. Learning plans, representation recipes, and experiment definitions are versioned adjacent artifacts, never canonical musical content.
 
 The canonical document is JSON validated first by JSON Schema 2020-12 and then by semantic validators. TypeScript model types are generated or mechanically checked against the schema; handwritten TypeScript types may add behavior but may not broaden or narrow accepted serialized data silently.
 
@@ -201,17 +202,16 @@ Arrangement {
   repetitions?: RepetitionReference[];
   variations?: Variation[];
   transitions?: Transition[];
-  learningChunks?: LearningChunk[];
   handAssignments?: HandAssignment[];
   duration?: Duration;
   metadata?: CanonicalMetadata
 }
 ```
 
-**Purpose:** realization-specific musical and pedagogical content.  
+**Purpose:** realization-specific musical content and authored arrangement metadata. Derived pedagogical decomposition is excluded.  
 **Invariants:** references one song; owns temporal and realization data; section/idea/event spans fit the arrangement; no final layout.  
 **Specificity:** realization fields whose omission has meaning use `SpecificValue`.  
-**Transposition:** key and pitch-bearing descendants transpose; IDs, time, form, roles, chunks, repetition, and provenance remain stable.  
+**Transposition:** key and pitch-bearing descendants transpose; IDs, time, form, roles, repetition, and provenance remain stable. Learning plans remain separate and continue to reference the same canonical IDs/spans.  
 **Errors:** reference cycles, overlap contradictions, impossible meter coordinates.  
 **Versioning:** arrangement objects migrate with document schema.  
 **Tests:** transposition invariants, immutable load, multiple views from one arrangement.
@@ -219,7 +219,7 @@ Arrangement {
 Valid: arrangement with sections, events, and independent hand assignments.  
 Invalid: final `x`, `y`, or `lineBreak` fields in canonical arrangement.
 
-## 5. Structure and pedagogy
+## 5. Canonical musical structure
 
 ### 5.1 `Section`
 
@@ -247,7 +247,7 @@ Section {
 **Provenance:** section ID survives projection and rendering.
 
 Valid: verse section containing two idea refs.  
-Invalid: section implicitly declared as a practice chunk with no `LearningChunk`.
+Invalid: section contains a `practiceOrder` or is declared as a learner-owned chunk inside the arrangement.
 
 ### 5.2 `MusicalIdea`
 
@@ -261,7 +261,6 @@ MusicalIdea {
   variationRef?: StableId;
   endingBehavior?: EndingBehavior;
   essentiality?: SpecificValue<Essentiality>;
-  learningChunkRefs?: StableId[];
   metadata?: CanonicalMetadata
 }
 ```
@@ -289,7 +288,7 @@ Transition {
 }
 ```
 
-**Purpose:** explicit connection between sections, ideas, endings, or learning chunks.  
+**Purpose:** explicit canonical musical connection between sections, ideas, or endings. Learning-plan relationships may reference this transition when creating transition-practice chunks.  
 **Invariants:** endpoints exist and are not identical unless a loop is explicitly intended; optional span/events align temporally.  
 **Transposition:** referenced pitch events transpose.  
 **Errors:** dangling endpoint, incompatible ordering.  
@@ -298,30 +297,14 @@ Transition {
 Valid: transition from verse idea to chorus idea.  
 Invalid: free text “transition” with no endpoints.
 
-### 5.4 `LearningChunk`
+### 5.4 Canonical boundary for learning content
 
-```text
-LearningChunk {
-  id: StableId;
-  label?: string;
-  contentRefs: TypedCanonicalRef[];
-  roleFilter?: StableId[];
-  handFilter?: HandName[];
-  span?: TimeSpan;
-  prerequisiteRefs?: StableId[];
-  strategyTags?: string[];
-  metadata?: CanonicalMetadata
-}
-```
+`Arrangement` does not contain `LearningChunk`, learning order, prerequisites, practice decomposition, or transformation configuration. Those belong to a derived `LearningPlan` specified in `LearningTransformations.md`.
 
-**Purpose:** pedagogical practice unit referencing canonical content without owning or copying music.  
-**Invariants:** references at least one canonical item; role/hand filters do not mutate referenced music; chunks may cross sections/measures and differ by role/hand.  
-**Transposition:** references unchanged; projected content transposes with arrangement.  
-**Errors:** copied event payload inside chunk, dangling references, prerequisite cycle.  
-**Versioning:** strategy tags are descriptive and non-semantic unless approved later.
+Canonical structure exposes stable IDs, rational spans, roles, hand assignments, ideas, repetitions, and transitions that a learning transformation may reference. It does not predict or approve the learner's practice decomposition.
 
-Valid: left-hand chunk referencing two ideas and a transition.  
-Invalid: chunk embeds duplicate note events.
+Valid: a `MusicalIdea` with stable ID and span that a later plan selects.  
+Invalid: an arrangement field `learningChunks` containing practice order or copied events.
 
 ## 6. Roles and execution
 
@@ -688,7 +671,6 @@ NormalizedArrangement {
   measures: NormalizedMeasureCoordinate[];
   sections: NormalizedSection[];
   events: NormalizedEvent[];
-  learningChunks: NormalizedLearningChunk[];
   diagnostics: Diagnostic[];
   inputHash: string;
   optionsHash: string
@@ -706,9 +688,29 @@ NormalizedEvent {
 }
 ```
 
-Normalization resolves references and expands reusable material but does not choose layout, labels, line breaks, or hidden defaults. Unknown and intentionally unspecified states remain exact discriminated values.
+Normalization resolves references and expands reusable material but does not choose learning chunks, practice order, recipes, layout, labels, line breaks, or hidden defaults. Unknown and intentionally unspecified states remain exact discriminated values.
 
-## 12. Reference and validation order
+## 12. Adjacent versioned artifacts (not canonical music)
+
+The following contracts are maintained in their own schemas and packages. They may reference canonical IDs and hashes but may not be embedded in `CanonicalDocument` or accepted as musical authority.
+
+### 12.1 `LearningTransformationDefinition` and `LearningPlan`
+
+A reusable transformation definition selects a registered deterministic transformation plus validated parameters. Its derived `LearningPlan` contains `LearningChunk` selectors, practice relationships, provenance, diagnostics, and hashes. Chunks reference canonical IDs/spans and never copy event payloads. Full contracts are in `LearningTransformations.md`.
+
+### 12.2 `RepresentationRecipe`
+
+A recipe pins time mapping, pitch mapping, duration encoding, label, overlay, disclosure, accessibility, and renderer strategies. It contains no musical events or final coordinates. Full contracts are in `ExperimentWorkbench.md`.
+
+### 12.3 `ExperimentDefinition` and `ExperimentRunManifest`
+
+An experiment definition references fixtures, recipes, optional learning transformations, controlled/changed variables, tasks, and observation definitions. A run manifest pins input and implementation hashes. Human observations remain separate and never become canonical music.
+
+### 12.4 Cross-artifact reference rule
+
+References from adjacent artifacts to canonical content are one-way. Canonical music never references a recipe, learning plan, experiment run, or browser/workbench state. Removing all adjacent artifacts leaves the canonical document semantically complete.
+
+## 13. Reference and validation order
 
 1. Parse JSON.
 2. Validate schema version and JSON Schema.
@@ -721,7 +723,7 @@ Normalization resolves references and expands reusable material but does not cho
 9. Validate lawful source records for corpus-marked documents.
 10. Normalize only when no error-severity diagnostics remain.
 
-## 13. Serialization and ordering
+## 14. Serialization and ordering
 
 - UTF-8 JSON, no comments, no executable expressions.
 - Canonical examples use two-space indentation.
@@ -729,23 +731,26 @@ Normalization resolves references and expands reusable material but does not cho
 - Arrays whose order is musical retain document order; set-like arrays are normalized by stable ID.
 - Unknown extension fields are rejected unless under `metadata.extensions` with a valid namespace.
 
-## 14. Rejected alternatives
+## 15. Rejected alternatives
 
 - one opaque chord symbol string;
 - MIDI-only pitch storage;
 - nullable values for all specificity states;
 - hand as a musical role;
-- learning chunks owning copied music;
+- learning chunks stored in the arrangement or owning copied music;
 - duplicated canonical repeats;
 - arbitrary JSON Patch for variations;
 - renderer metadata in core event fields;
 - generated familiar-shape hints stored as canonical by default;
 - normalized output accepted as canonical input.
 
-## 15. Requirement coverage
+## 16. Requirement coverage
 
 - R-004–R-014: document, identity, time, specificity, provenance, pitch envelope.
 - R-015–R-019: chord analysis, inversion, slash bass, voicing.
-- R-020–R-025: sections, ideas, patterns, transitions, lyrics.
+- R-020–R-025: sections, ideas, patterns, canonical transitions, lyrics. Derived learning-plan relationships provide chunk connections without arrangement ownership.
 - R-035–R-041: pedagogical hints.
 - R-048–R-050: versioned machine-readable data and future adapter boundaries.
+
+
+Architecture Sprint 0.1 ownership note: R-010 and R-030 are satisfied by the canonical reference surface plus the derived contracts in `LearningTransformations.md`; they do not require learning chunks to be canonical arrangement children.

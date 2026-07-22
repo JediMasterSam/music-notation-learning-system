@@ -1,6 +1,7 @@
 # Pattern Engine
 
-Status: Architecture Sprint 0 complete — proposed for review
+Status: Architecture Sprint 0.1 reviewed — no material amendment required  
+Architecture baseline: 0.2
 
 ## 1. Purpose and boundary
 
@@ -266,3 +267,8 @@ Only `approved` patterns with a Product Owner decision may be treated as default
 - expansion that discards definition or override provenance;
 - hidden fallback values for unspecified parameters;
 - automatic shared-library admission from usage count alone.
+
+
+## 18. Architecture Sprint 0.1 compatibility review
+
+No material pattern-engine change is required. Patterns still expand to semantic events during normalization before any learning transformation, recipe projection, or layout strategy. Learning plans may reference canonical ideas/events produced through normal normalization provenance; recipes may expose or hide pattern/repetition overlays but cannot reinterpret pattern semantics. Pattern definitions and instances remain musical content, while workbench strategies remain presentation configuration.
