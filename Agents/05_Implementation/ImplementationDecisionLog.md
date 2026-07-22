@@ -68,3 +68,9 @@ This log records ordinary implementation choices made inside Architecture baseli
 - **Decision:** Carry canonical roles, musical ideas, and transitions into the immutable normalized artifact alongside sections and events.
 - **Reason:** Projection must apply role-kind visibility and resolve structural/learning selectors without re-reading canonical JSON or inferring meaning from IDs. These records remain derived references and contain no recipe, learning chunk, or layout data.
 - **Scope:** Normalized format `0.1.0`; the added structural context changes normalized and dependent plan hashes, so committed expected plans were regenerated.
+
+## IDL-012 — Exact layout scalar serialization
+
+- **Decision:** Store every layout coordinate as a normalized rational plus its deterministic `mnls.decimal@1` serialization; terminating decimals remain exact and non-terminating values use six-place half-up rounding.
+- **Reason:** Scene arithmetic and mathematical tests retain exact values while HTML/SVG serialization receives locale-independent pinned text with no browser floating-point or font-metric dependency.
+- **Scope:** Disposable layout/scene format `0.1.0`; canonical and projected artifacts contain no coordinates.

@@ -216,8 +216,8 @@ const definitions: readonly {
         fixedGrid,
         {
           subdivisionsPerBeat: { type: "integer", minimum: 1, maximum: 16, default: 2 },
-          unitsPerCell: { type: "number", minimum: 1, default: 48 },
-          originX: { type: "number", minimum: 0, default: 48 },
+          unitsPerCell: { type: "integer", minimum: 1, default: 48 },
+          originX: { type: "integer", minimum: 0, default: 48 },
         },
         (options) => [
           {
@@ -231,27 +231,27 @@ const definitions: readonly {
     {
       descriptor: gridSpan,
       implementation: implementation(gridSpan, {
-        minimumHitWidth: { type: "number", minimum: 1, default: 8 },
+        minimumHitWidth: { type: "integer", minimum: 1, default: 8 },
       }),
     },
     {
       descriptor: proportional,
       implementation: implementation(proportional, {
-        unitsPerBeat: { type: "number", minimum: 1, default: 96 },
-        originX: { type: "number", minimum: 0, default: 48 },
+        unitsPerBeat: { type: "integer", minimum: 1, default: 96 },
+        originX: { type: "integer", minimum: 0, default: 48 },
       }),
     },
     {
       descriptor: proportionalExtent,
       implementation: implementation(proportionalExtent, {
-        minimumHitWidth: { type: "number", minimum: 1, default: 8 },
+        minimumHitWidth: { type: "integer", minimum: 1, default: 8 },
       }),
     },
     {
       descriptor: absolutePitch,
       implementation: implementation(absolutePitch, {
-        unitsPerSemitone: { type: "number", minimum: 1, default: 12 },
-        pitchOrigin: { type: "number", default: 180 },
+        unitsPerSemitone: { type: "integer", minimum: 1, default: 12 },
+        pitchOrigin: { type: "integer", default: 900 },
       }),
     },
     {

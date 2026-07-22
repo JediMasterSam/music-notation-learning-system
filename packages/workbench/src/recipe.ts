@@ -87,6 +87,11 @@ export interface ResolvedRecipe {
     readonly version: string;
     readonly contentHash: string;
   };
+  readonly authoredIdentity: {
+    readonly name: string;
+    readonly description?: string;
+    readonly status: "experimental" | "comparison" | "internal";
+  };
   readonly selections: readonly ResolvedStrategySelection[];
   readonly compatibility: CompatibilityReport;
   readonly canonicalOptions: JSONValue;
@@ -386,6 +391,11 @@ export function resolveRecipe(
       id: recipe.id,
       version: recipe.version,
       contentHash: contentHash(recipe),
+    },
+    authoredIdentity: {
+      name: recipe.name,
+      ...(recipe.description ? { description: recipe.description } : {}),
+      status: recipe.status,
     },
     selections: sortedSelections,
     compatibility,

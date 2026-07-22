@@ -78,6 +78,10 @@ function chordProjectionRecipe(includeHints: boolean): ResolvedRecipe {
       version: "1.0.0",
       contentHash: contentHash({ id: "mnls.recipe.projection-contract", includeHints }),
     },
+    authoredIdentity: {
+      name: "Projection contract",
+      status: "internal",
+    },
     selections: [],
     compatibility: { status: "supported", diagnostics: [], limitations: [] },
     canonicalOptions: {
