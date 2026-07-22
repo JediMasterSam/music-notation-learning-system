@@ -1,0 +1,8 @@
+{
+  "formatVersion": "0.1.0",
+  "vocabularyId": "uncontrolled.labels",
+  "vocabularyVersion": "1.0.0",
+  "qualities": [
+    { "qualityId": "kind of major-ish", "displayLabel": "?", "pitchClassIntervals": [0] }
+  ]
+}

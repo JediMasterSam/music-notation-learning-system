@@ -1,0 +1,30 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "mnls.experiment.example",
+  "version": "1.0.0",
+  "fixtureRefs": [
+    {
+      "id": "fixture.example",
+      "version": "0.1.0",
+      "contentHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  ],
+  "treatmentRefs": [
+    {
+      "id": "recipe.a",
+      "version": "1.0.0",
+      "contentHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+    },
+    {
+      "id": "recipe.b",
+      "version": "1.0.0",
+      "contentHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+    }
+  ],
+  "researchQuestion": "How do two controlled treatments differ?",
+  "controlledVariables": [{ "id": "source", "description": "Canonical source" }],
+  "changedVariables": [{ "id": "time", "description": "Time mapping" }],
+  "tasks": [{ "id": "inspect", "description": "Inspect the comparison" }],
+  "observations": [{ "id": "friction", "description": "Record friction separately" }],
+  "status": "draft"
+}

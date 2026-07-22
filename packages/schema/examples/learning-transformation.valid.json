@@ -1,0 +1,20 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "mnls.learning.example",
+  "version": "1.0.0",
+  "name": "Schema transformation example",
+  "status": "experimental",
+  "supportedArrangementCapabilities": [
+    {
+      "source": "arrangement",
+      "capability": "structure.musical-ideas",
+      "acceptedStates": ["present"]
+    }
+  ],
+  "parameterSchemaRef": "mnls.learning.example.parameters@1",
+  "implementationRef": {
+    "transformationId": "mnls.learning.example",
+    "transformationVersion": "1"
+  },
+  "outputContractVersion": "0.1.0"
+}

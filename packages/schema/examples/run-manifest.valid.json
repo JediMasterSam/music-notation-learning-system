@@ -1,0 +1,9 @@
+{
+  "formatVersion": "0.1.0",
+  "artifactType": "experiment-run-manifest",
+  "id": "run.example",
+  "inputRefs": [],
+  "toolVersions": { "mnls.workbench": "0.1.0" },
+  "outputArtifacts": [],
+  "runHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+}

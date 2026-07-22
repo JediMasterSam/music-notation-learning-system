@@ -1,0 +1,19 @@
+{
+  "documentType": "music-notation-learning-system",
+  "schemaVersion": "0.1.0",
+  "id": "document.invalid",
+  "song": { "id": "song.invalid", "title": "Invalid arrangement ownership" },
+  "arrangements": [
+    {
+      "id": "arrangement.invalid",
+      "songRef": "song.invalid",
+      "meterMap": [],
+      "measures": [],
+      "roles": [],
+      "sections": [],
+      "ideas": [],
+      "events": [],
+      "learningChunks": []
+    }
+  ]
+}

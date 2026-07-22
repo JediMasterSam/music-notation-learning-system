@@ -1,0 +1,18 @@
+{
+  "documentType": "music-notation-learning-system",
+  "schemaVersion": "0.1.0",
+  "id": "document.example",
+  "song": { "id": "song.example", "title": "Synthetic schema example" },
+  "arrangements": [
+    {
+      "id": "arrangement.example",
+      "songRef": "song.example",
+      "meterMap": [],
+      "measures": [],
+      "roles": [],
+      "sections": [],
+      "ideas": [],
+      "events": []
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "formatVersion": "0.1.0",
+  "vocabularyId": "mnls.chord-quality",
+  "vocabularyVersion": "1.0.0",
+  "qualities": [
+    {
+      "qualityId": "major",
+      "displayLabel": "",
+      "aliases": ["maj"],
+      "pitchClassIntervals": [0, 4, 7]
+    }
+  ]
+}

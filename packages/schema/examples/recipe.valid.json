@@ -1,0 +1,24 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "mnls.recipe.example",
+  "version": "1.0.0",
+  "name": "Schema comparison recipe",
+  "status": "comparison",
+  "strategies": {
+    "timeMapping": { "strategyId": "mnls.time.example", "strategyVersion": "1", "options": {} },
+    "pitchMapping": { "strategyId": "mnls.pitch.example", "strategyVersion": "1", "options": {} },
+    "durationEncoding": {
+      "strategyId": "mnls.duration.example",
+      "strategyVersion": "1",
+      "options": {}
+    },
+    "pitchLabels": { "strategyId": "mnls.labels.example", "strategyVersion": "1", "options": {} }
+  },
+  "visibility": {},
+  "accessibility": {
+    "includeExactPitch": true,
+    "includeExactTime": true,
+    "includeSourceOrderEvents": true
+  },
+  "renderer": { "strategyId": "mnls.renderer.example", "strategyVersion": "1", "options": {} }
+}

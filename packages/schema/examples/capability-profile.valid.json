@@ -1,0 +1,19 @@
+{
+  "formatVersion": "0.1.0",
+  "profileType": "arrangement",
+  "arrangementId": "arrangement.example",
+  "canonicalHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "normalizedHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+  "capabilities": [
+    {
+      "capability": "time.exact-onset",
+      "state": "present",
+      "source": {
+        "authority": "canonical-arrangement",
+        "artifactId": "arrangement.example",
+        "contentHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "evidenceRefs": ["event.example"]
+    }
+  ]
+}

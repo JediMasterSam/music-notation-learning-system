@@ -1,0 +1,18 @@
+{
+  "formatVersion": "0.1.0",
+  "profileType": "arrangement",
+  "arrangementId": "arrangement.example",
+  "canonicalHash": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+  "normalizedHash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+  "capabilities": [
+    {
+      "capability": "learning-plan.has-chunks",
+      "state": "present",
+      "source": {
+        "authority": "verified-learning-plan",
+        "artifactId": "plan.forged",
+        "contentHash": "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+      }
+    }
+  ]
+}

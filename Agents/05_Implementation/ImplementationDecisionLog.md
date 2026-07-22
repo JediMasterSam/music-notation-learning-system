@@ -20,3 +20,15 @@ This log records ordinary implementation choices made inside Architecture baseli
 
 - **Decision:** Pin Ajv `8.20.0` and Vitest `4.1.10` after the initial selected versions produced published audit findings.
 - **Reason:** Both patched versions preserve the approved stack and removed the reported advisories without a major-version change.
+
+## IDL-004 — Structural versus registry validation
+
+- **Decision:** JSON Schema requires the complete `ChordQualityRef` shape and forbids opaque quality strings, while vocabulary/version/quality existence is checked by the ordered semantic validator in WP-03.
+- **Reason:** This preserves JSON Schema as serialized-structure authority without hard-coding an extensible controlled vocabulary into the canonical schema.
+- **Scope:** Schema `0.1.0` and semantic validation staging.
+
+## IDL-005 — Arrangement role collection
+
+- **Decision:** Serialize `MusicalRole` records in `Arrangement.roles` so event, idea, and hand-assignment references have an authoritative arrangement-owned target.
+- **Reason:** The approved model defines `MusicalRole` and requires typed role references, but its abbreviated `Arrangement` listing omits the collection that owns them. Arrangement ownership preserves song/arrangement and role/hand boundaries.
+- **Scope:** Canonical schema/model completion; no new role kinds or learner vocabulary.

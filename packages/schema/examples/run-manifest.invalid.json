@@ -1,0 +1,8 @@
+{
+  "formatVersion": "0.1.0",
+  "artifactType": "human-observation",
+  "id": "run.invalid",
+  "inputRefs": [],
+  "toolVersions": {},
+  "outputArtifacts": []
+}

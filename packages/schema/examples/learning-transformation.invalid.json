@@ -1,0 +1,15 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "mnls.learning.invalid",
+  "version": "1.0.0",
+  "name": "Executable transformation",
+  "status": "experimental",
+  "supportedArrangementCapabilities": [],
+  "parameterSchemaRef": "invalid",
+  "implementationRef": {
+    "transformationId": "mnls.learning.invalid",
+    "transformationVersion": "1"
+  },
+  "outputContractVersion": "0.1.0",
+  "script": "fixtureSpecificCode()"
+}
