@@ -1,6 +1,6 @@
 # Rendering Engine
 
-Status: Architecture Sprint 0.1 complete — proposed for review  
+Status: Architecture Sprint 0.1 Product Owner amendments complete — proposed for approval
 Architecture baseline: 0.2
 
 ## 1. Purpose
@@ -176,7 +176,7 @@ The architecture continues to support:
 - harmonic roadmap;
 - role-isolated views;
 - separated and combined hands;
-- learning-plan chunks;
+- verified learning-plan chunks;
 - arbitrary excerpts.
 
 Sprint 1 implements melody treatment views and the minimal comparison page. Harmony, role, hand, repetition, voicing, and hint distinctions remain covered by model/projection contract tests and retained fixture validation; broader functional rendering may proceed in Sprint 2 as detailed in Sprint 1.
@@ -246,7 +246,7 @@ Supported overlay boundaries include:
 - harmony and bass/inversion/voicing distinctions;
 - musical roles;
 - hand assignments including unknown/unspecified state;
-- learning-plan chunks;
+- verified learning-plan chunks;
 - pedagogical hints subordinate to canonical harmony.
 
 A recipe may independently enable overlays. An overlay strategy must declare required canonical/plan capabilities.

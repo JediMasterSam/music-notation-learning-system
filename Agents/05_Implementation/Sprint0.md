@@ -23,43 +23,12 @@ Produce a complete engineering specification that allows a separate implementati
 
 ## Required depth
 
-Each architecture document must define:
-
-- module boundaries;
-- input and output contracts;
-- invariants;
-- failure behavior;
-- data ownership;
-- versioning;
-- test strategy;
-- examples;
-- rejected alternatives;
-- linked requirement IDs.
+Each architecture document must define module boundaries, input/output contracts, invariants, failure behavior, data ownership, versioning, test strategy, examples, rejected alternatives, and linked requirement IDs.
 
 ## Exit criteria
 
-Sprint 0 is complete only when:
+Sprint 0 is complete only when every requirement has ownership or disposition; experiments remain replaceable; canonical/normalized/derived models are separated; pitch strategy is swappable; inversion/slash bass/voicing remain distinct; specificity survives; hints cannot change harmony; repository commands/dependencies are defined; Sprint 1 is executable; no final syntax is selected; and no ADR hides a product decision.
 
-- every requirement has an owning component or explicit future-phase disposition;
-- experimental decisions remain replaceable;
-- canonical and normalized models are clearly separated;
-- pitch strategy can be swapped;
-- inversion, slash bass, and voicing cannot be accidentally collapsed;
-- specificity states survive all pipeline stages;
-- familiar-shape hints cannot change harmonic semantics;
-- repository commands and package dependencies are defined;
-- Sprint 1 is executable in order;
-- no final notation syntax has been selected;
-- no product decision is hidden inside an ADR.
+## Amendment history
 
-## Escalation gates
-
-Stop only when:
-
-1. approved requirements directly conflict;
-2. a product behavior is genuinely undefined and blocks architecture;
-3. an experimental question must be made permanent to proceed;
-4. a new learner-facing concept appears unavoidable;
-5. legal source constraints prevent required validation and no lawful fixture can substitute.
-
-Ordinary technical choices must be decided, documented, and continued.
+Architecture Sprint 0.1 added the experimental workbench, declarative recipes, derived learning transformations/plans, multiple treatment strategies, and reproducible experiments. The Product Owner correction pass produced architecture baseline 0.2 with formal product decisions and requirements, artifact-scoped capability ownership, controlled chord-quality semantics, A-011 workbench-usability evidence, and precise E-007 experiment framing.

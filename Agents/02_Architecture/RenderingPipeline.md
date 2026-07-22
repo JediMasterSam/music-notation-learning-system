@@ -1,6 +1,6 @@
 # Rendering Pipeline
 
-Status: Architecture Sprint 0.1 complete — proposed for review  
+Status: Architecture Sprint 0.1 Product Owner amendments complete — proposed for approval
 Architecture baseline: 0.2
 
 ## 1. Purpose
@@ -19,7 +19,7 @@ Related requirements: R-004, R-007, R-011–R-014, R-025–R-041, R-047–R-050.
 5.  Musical normalization
 6.  Optional semantic transposition
 7.  Arrangement capability analysis
-8.  Recipe and optional learning-plan load
+8.  Recipe, renderer/environment profile, and optional verified learning-plan load
 9.  Strategy discovery and recipe resolution
 10. Compatibility validation
 11. View projection
@@ -60,7 +60,7 @@ All inputs are treated as immutable. Stages are pure except load/output adapters
 
 ## 4. Stage 1 — Artifact load
 
-**Inputs:** canonical JSON path; recipe path; optional learning-plan or transformation path; optional experiment definition.  
+**Inputs:** canonical JSON path; recipe path; renderer/environment identity; optional learning-plan or transformation path; optional experiment definition.  
 **Outputs:** parsed JSON values and content hashes.  
 **Guarantees:** UTF-8, duplicate-key detection where parser support permits, no expression evaluation, no URL fetching.  
 **Errors:** unreadable file, malformed JSON, unsupported size limit, path traversal, hash mismatch in reproduction mode.
@@ -141,7 +141,7 @@ Examples:
 - hand assignments complete/partial/unknown;
 - harmony/pitch-class-set comparison available.
 
-Output is deterministic and hashable. Capability diagnostics include canonical evidence refs.
+Output is deterministic and hashable. This stage emits only `ArrangementCapabilityProfile`, with canonical/normalized hashes and arrangement-derived evidence refs. It cannot inspect recipes, plans, renderers, or experiments. Plan verification and renderer/environment profiling occur separately; compatibility composes the profiles later.
 
 ## 11. Learning-plan generation sibling pipeline
 
@@ -159,7 +159,9 @@ When a run requests a transformation rather than an existing verified plan:
 
 The result is a derived `LearningPlan`. Failure does not affect the canonical arrangement. A rendering recipe that requires a plan is incompatible when no valid plan is supplied/generated.
 
-## 12. Stage 8 — Recipe and optional learning-plan load
+## 12. Stage 8 — Recipe and artifact-scoped optional inputs
+
+Load and validate the recipe. Resolve a `RendererCapabilityProfile` and optional `EnvironmentCapabilityProfile`. If a learning plan is supplied, verify its plan hash, arrangement ID/hash, references, and deterministic regeneration before deriving `LearningPlanCapabilityProfile`. A requested learning overlay without this verified matching profile is incompatible. No plan capability is copied into `ArrangementCapabilityProfile`.
 
 Recipe identity, version, content hash, and option values are retained. A supplied learning plan is verified against arrangement ID/hash, transformation definition hash, and deterministic regeneration when requested.
 
@@ -200,7 +202,10 @@ Examples:
 - proportional duration with unknown duration: incompatible;
 - exact hand isolation with unknown assignment: incompatible;
 - displaying hand-assignment state without isolation: supported with visible unknown-state limitation;
-- contour-only pitch mapping plus requested exact pitch labels: incompatible unless an independent exact-pitch label provider has access to canonical pitch and declares compatibility.
+- contour-only pitch mapping plus requested exact pitch labels: incompatible unless an independent exact-pitch label provider has access to canonical pitch and declares compatibility;
+- learning-plan overlay without a verified matching plan profile: incompatible;
+- stale plan arrangement hash: error before projection;
+- renderer-requested overlay unsupported by the renderer profile: incompatible or explicit limitation according to policy.
 
 No stage falls back to another strategy.
 
@@ -215,7 +220,7 @@ ProjectionInput {
 }
 ```
 
-Projection may filter roles/hands, select excerpts, expose learning-plan chunks, and add semantic overlays. It preserves temporal/structural context required by the recipe and cannot reinterpret harmony or alter canonical values.
+Projection may filter roles/hands, select excerpts, expose chunks from a verified matching learning plan, and add semantic overlays. It preserves temporal/structural context required by the recipe and cannot reinterpret harmony or alter canonical values.
 
 Projected nodes include semantic IDs, source IDs, exact time/pitch values where available, specificity, role/hand data, learning-plan references, and provenance. They contain no final coordinates.
 
@@ -230,7 +235,7 @@ Layout composes the selected time, pitch, duration, label, overlay, disclosure, 
 - beat/subdivision boundaries are explicit;
 - pitch y mapping is consistent and exact pitch text remains available.
 
-### Proportional spatial melody treatment
+### Proportional horizontal time/duration treatment (E-007)
 
 - x derives linearly from exact onset;
 - event duration edge/extent derives linearly from exact duration;
@@ -240,6 +245,10 @@ Layout composes the selected time, pitch, duration, label, overlay, disclosure, 
 - no stem/flag/symbol is required to recover basic duration.
 
 Layout may apply deterministic scaling, margins, lane allocation, and break opportunities. It may not change musical time/pitch or hide an acknowledged limitation.
+
+### 16.1 Harmonic semantic boundary
+
+Chord-quality display labels are resolved from validated `ChordQualityRef` values through the pinned harmony vocabulary. Free-form harmonic analysis annotations are not compatibility inputs and are not interpreted by projection, layout, or renderer strategies. Sprint 1 omits them from visual output; future generic annotation display may escape and label them as non-authoritative without parsing them.
 
 ## 17. Stage 13 — Accessible HTML/SVG rendering
 

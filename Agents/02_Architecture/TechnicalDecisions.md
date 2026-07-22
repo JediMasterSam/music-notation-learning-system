@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-Status: Architecture Sprint 0.1 complete — proposed for review
+Status: Architecture Sprint 0.1 Product Owner amendments complete — proposed for approval
 
 These ADRs make technical decisions only. Product meaning remains governed by the Constitution, approved product decisions, requirements, acceptance tests, and experiments.
 
@@ -395,7 +395,7 @@ JSON is the Sprint 1 configuration serialization, not a final authoring language
 
 # ADR-013 — Strategies use evidence-backed capability and compatibility contracts
 
-Status: Accepted
+Status: Superseded by ADR-017
 
 ## Context
 
@@ -525,3 +525,91 @@ R-004, R-006, R-011, R-014, R-026, R-031–R-033, R-043, R-047–R-050; handoff 
 ## Assumptions introduced
 
 Absolute chromatic y mapping is a comparison implementation for Sprint 1, not an approved pitch presentation. Staff-like, diatonic, relative, and contour mappings remain replaceable future strategies.
+
+## Product Owner amendment note
+
+E-007 holds `mnls.pitch.absolute-chromatic-y@1`, canonical source, labels, accessibility data, and renderer environment constant. It compares horizontal time mapping, duration encoding, and temporal reference treatment. A separate future E-008 compares pitch mappings while holding time/duration treatment constant.
+
+---
+
+# ADR-017 — Capability evidence is artifact-scoped and composed through neutral contracts
+
+Status: Accepted
+
+## Context
+
+ADR-013 correctly required evidence-backed compatibility but allowed `ArrangementCapabilityProfile` to contemplate learning-plan availability and placed capability contracts under workbench ownership. That conflicts with derived-plan ownership and creates a dependency from learning into experiment orchestration.
+
+## Decision
+
+Create dependency-neutral `@mnls/capabilities` contracts and separate analyzers. `ArrangementCapabilityProfile` contains only validated arrangement/normalized evidence. `LearningPlanCapabilityProfile` is produced only after plan verification and pins plan and arrangement hashes. Renderer and environment profiles remain separate. `CompatibilityInput` composes these profiles with selected strategy descriptors and limitation policy. A learning overlay without a verified matching plan is incompatible. Recipes cannot author capability evidence.
+
+Add `@mnls/capability-analysis` for arrangement, renderer, and environment analyzers. `@mnls/learning` consumes neutral arrangement requirements and produces verified-plan profiles; it does not import `@mnls/workbench`. ADR-013 is superseded; ADR-001 is explicitly amended by the additional neutral packages.
+
+## Consequences
+
+Capability ownership is truthful, dependency direction remains inward, stale plan hashes are rejected, deleting plans cannot change arrangement analysis, and diagnostics can name the authoritative evidence source. More profile types may be added only when they represent a genuinely separate authority.
+
+## Alternatives considered
+
+- Keep `learning-plan.available` on arrangements: rejected because an arrangement cannot own plan existence.
+- Let recipes declare capabilities: rejected because configuration cannot create evidence.
+- Keep contracts in workbench behind an interface: rejected because it still makes learning depend on orchestration ownership.
+- Flatten every fact into one profile: rejected because authority and stale-hash validation become ambiguous.
+
+## Requirements and decisions served
+
+R-004, R-007, R-010, R-019, R-030, R-039–R-040, R-052–R-055, R-057; D-002, D-012, D-026–D-027.
+
+## Assumptions introduced
+
+The capability vocabulary remains architecture-internal. A capability becoming learner-facing terminology requires Product Owner review.
+
+---
+
+# ADR-018 — Chord quality uses a controlled vocabulary and free-form harmonic analysis is annotation-only
+
+Status: Accepted
+
+## Context
+
+Unrestricted canonical `quality`, `function`, and `romanNumeral` strings cannot be reliably validated, compared, transposed, or reasoned about. They would recreate opaque rendered labels as accidental musical authority immediately before schema `0.1.0` implementation.
+
+## Decision
+
+Replace `quality: string` with `ChordQualityRef { vocabularyId, vocabularyVersion, qualityId }`. `@mnls/harmony` owns immutable registered vocabularies, semantic resolution, aliases, fixture-required pitch-class meaning, and derived display labels. Unknown references fail; aliases cannot be stored as semantic IDs; new shared qualities follow vocabulary/corpus governance.
+
+Defer harmonic function and Roman-numeral semantics. Free-form material is allowed only as `HarmonicAnalysisAnnotation` with `authority: "annotation"`. Annotation text, system identifiers, and tags are non-authoritative and cannot affect validation, transposition, compatibility, learning transformations, projection selection, layout, or strategy branching. Sprint 1 does not render them.
+
+## Consequences
+
+Canonical chord quality is testable and extensible without arbitrary text becoming authority. A future typed functional-analysis model requires a new product decision, requirements, and ADR rather than reinterpretation of annotation strings.
+
+## Alternatives considered
+
+- Enumerate all qualities directly in the canonical schema: rejected because extension requires schema churn and aliases remain ambiguous.
+- Preserve strings with a naming convention: rejected because conventions are not enforceable semantic identity.
+- Implement partial Roman-numeral semantics now: rejected because key context, scale degree, alterations, applied targets, inversion, system/version, validation, and transposition would be incomplete.
+
+## Requirements and decisions served
+
+R-005, R-015–R-019, R-035–R-041, R-048; D-003, D-011–D-013, D-019–D-021.
+
+## Assumptions introduced
+
+Sprint 1's initial quality vocabulary contains only controlled IDs required by lawful fixtures and tests. Corpus admission, not implementation convenience, governs expansion.
+
+---
+
+# Product-decision mapping for ADR-011 through ADR-018
+
+| ADR | Product decisions |
+|---|---|
+| ADR-011 | D-002, D-010, D-026 |
+| ADR-012 | D-002, D-025, D-027 |
+| ADR-013 | Superseded by ADR-017; originally D-012, D-027 |
+| ADR-014 | D-025, D-027; assumption A-011 |
+| ADR-015 | D-025, D-029 |
+| ADR-016 | D-025, D-027–D-028 |
+| ADR-017 | D-002, D-012, D-026–D-027 |
+| ADR-018 | D-003, D-011–D-013, D-019–D-021 |

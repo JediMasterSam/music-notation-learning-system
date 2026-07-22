@@ -1,6 +1,6 @@
 # Experiment Workbench
 
-Status: Architecture Sprint 0.1 complete — proposed for review  
+Status: Architecture Sprint 0.1 Product Owner amendments complete — proposed for approval
 Architecture baseline: 0.2  
 Applies to: Prototype 1
 
@@ -10,7 +10,7 @@ The experiment workbench is the non-musical orchestration layer that lets the Pr
 
 It owns configuration and reproducibility. It does not own musical semantics, learner-facing defaults, canonical events, or claims about learning effectiveness.
 
-Source obligations: Architecture Sprint 0.1 handoff §§2–10. Related requirements: R-004, R-011–R-014, R-026–R-034, R-039, R-042–R-050.
+Source obligations: Architecture Sprint 0.1 handoff §§2–10 and Product Owner review §§4–9. Related requirements: R-004, R-011–R-014, R-026–R-034, R-039, R-042–R-058. Related decisions: D-025, D-027–D-029.
 
 ## 2. Boundary
 
@@ -93,8 +93,7 @@ StrategyDescriptor {
   displayName: string;
   status: "experimental" | "comparison" | "internal";
   optionSchemaRef: string;
-  requiresArrangementCapabilities: CapabilityRequirement[];
-  requiresStrategyCapabilities?: CapabilityRequirement[];
+  requiresCapabilities: CapabilityRequirement[];
   providesCapabilities: CapabilityDeclaration[];
   conflictsWith?: CompatibilityRule[];
   limitations?: LimitationDeclaration[];
@@ -114,41 +113,83 @@ StrategyKind =
 
 A descriptor is discoverable data. The implementation remains compiled TypeScript registered at the composition root. Recipes select descriptors by ID and pinned version; they never name source files or import modules.
 
-### 3.3 `ArrangementCapabilityProfile`
+### 3.3 Artifact-scoped capability profiles
+
+Capability contracts are owned by neutral `@mnls/capabilities`, not by the workbench or learning engine.
 
 ```text
-ArrangementCapabilityProfile {
-  arrangementId: StableId;
-  inputHash: string;
-  capabilities: CapabilityEvidence[];
-}
-
 CapabilityEvidence {
   capability: string;
   state: "present" | "partial" | "absent" | "unknown";
-  evidenceRefs?: StableId[];
+  source: {
+    authority: "canonical-arrangement" | "verified-learning-plan" | "renderer" | "environment";
+    artifactId: string;
+    contentHash: string;
+  };
+  evidenceRefs?: string[];
   detail?: string;
+}
+
+ArrangementCapabilityProfile {
+  arrangementId: StableId;
+  canonicalHash: string;
+  normalizedHash: string;
+  capabilities: CapabilityEvidence[];
+}
+
+LearningPlanCapabilityProfile {
+  planId: string;
+  planHash: string;
+  arrangementId: StableId;
+  arrangementHash: string;
+  capabilities: CapabilityEvidence[];
+}
+
+RendererCapabilityProfile {
+  rendererRef: VersionedRef;
+  implementationHash: string;
+  capabilities: CapabilityEvidence[];
+}
+
+EnvironmentCapabilityProfile {
+  environmentId: string;
+  environmentHash: string;
+  capabilities: CapabilityEvidence[];
+}
+
+TreatmentInputProfile {
+  arrangement: ArrangementCapabilityProfile;
+  learningPlan?: LearningPlanCapabilityProfile;
+  renderer: RendererCapabilityProfile;
+  environment?: EnvironmentCapabilityProfile;
+}
+
+CapabilityRequirement {
+  source: "arrangement" | "learning-plan" | "renderer" | "environment" | "selected-strategy";
+  capability: string;
+  acceptedStates: ("present" | "partial")[];
 }
 ```
 
-Initial capabilities include:
+Arrangement capabilities may include exact onset/duration, subdivision resolution, exact register-bearing pitch, pitch spelling, harmony, musical ideas, sections, roles, hand-assignment completeness, and pitch-class-set comparison support. They must not claim that a learning plan, renderer overlay, experiment definition, or environment feature exists.
 
-- `time.exact-onset`;
-- `time.exact-duration`;
-- `time.subdivision-resolution`;
-- `pitch.exact-register`;
-- `pitch.spelling`;
-- `pitch.pitch-class-set-comparison`;
-- `structure.sections`;
-- `structure.musical-ideas`;
-- `roles.assigned`;
-- `hands.complete`, `hands.partial`, or `hands.unknown`;
-- `harmony.present`;
-- `learning-plan.available`.
+A verified learning plan may provide `learning-plan.valid`, `learning-plan.matches-arrangement`, `learning-plan.has-chunks`, role/hand filters, prerequisites, and transition-practice evidence. Its arrangement ID/hash must match the treatment arrangement. A stale or unverified plan produces no plan profile.
 
-Capabilities are computed from validated semantics. They are not author-supplied claims that bypass validation.
+Renderer/environment capabilities include SVG output, requested overlay support, accessible parallel event-list support, and comparison-wide environment availability. Deleting all plans does not change arrangement capability output. Recipes cannot supply or override any capability evidence.
 
-### 3.4 `ResolvedRecipe`
+### 3.4 Composite compatibility input
+
+```text
+CompatibilityInput {
+  inputProfile: TreatmentInputProfile;
+  selectedStrategyDescriptors: StrategyDescriptor[];
+  limitationPolicy: LimitationPolicy;
+}
+```
+
+A learning overlay request requires a verified matching `LearningPlanCapabilityProfile`. Without it the result is `incompatible`; it is not reported as a missing arrangement capability. Every diagnostic names the requirement source and authoritative evidence artifact.
+
+### 3.5 `ResolvedRecipe`
 
 ```text
 ResolvedRecipe {
@@ -163,7 +204,7 @@ ResolvedRecipe {
 
 Option schemas apply defaults only when the recipe schema explicitly defines a non-musical presentation default. Defaults may not create musical meaning. Resolved options are written to the manifest so reproduction does not depend on future schema defaults.
 
-### 3.5 `CompatibilityReport`
+### 3.6 `CompatibilityReport`
 
 ```text
 CompatibilityReport {
@@ -213,11 +254,13 @@ Recipe validation proceeds in this order:
 1. Validate recipe JSON against its schema.
 2. Resolve every pinned strategy ID/version.
 3. Validate each selection's options against the strategy option schema.
-4. Compute the arrangement capability profile.
-5. Aggregate selected strategy requirements and provided capabilities.
-6. Evaluate cross-strategy rules in stable lexical rule order.
-7. Classify unsupported requests as limitation, incompatibility, or unavailable.
-8. Produce a canonicalized `ResolvedRecipe` and compatibility report.
+4. Compute the arrangement capability profile from validated canonical/normalized data.
+5. Verify any supplied plan and compute a separate learning-plan profile; reject stale arrangement hashes.
+6. Resolve renderer and environment profiles.
+7. Build `CompatibilityInput` and aggregate source-qualified requirements/provided strategy capabilities.
+8. Evaluate cross-artifact and cross-strategy rules in stable lexical rule order.
+9. Classify unsupported requests as limitation, incompatibility, or unavailable.
+10. Produce a canonicalized `ResolvedRecipe` and compatibility report.
 9. Continue only when status is `supported`, or `supported-with-limitations` and every limitation is explicitly permitted by the recipe/run command.
 
 No strategy may self-declare that missing canonical information exists. A hand view with unknown assignments is incompatible when the recipe requires exact hand isolation; it may be supported with limitation only for a view that explicitly displays unknown assignment state.
@@ -266,7 +309,7 @@ Required behavior:
 - exact pitch remains available through visible labels or accessible text;
 - flags, stems, and conventional duration symbols are not required to determine basic duration.
 
-The shared pitch strategy isolates the first experiment primarily to time/duration treatment. Future recipes may independently substitute diatonic, key-relative, contour-only, interval-relative, or staff-like pitch mapping.
+The shared `mnls.pitch.absolute-chromatic-y@1` strategy is a controlled variable. E-007 therefore compares horizontal time mapping, duration encoding, and temporal reference treatment; it is not a complete test of spatial pitch notation. E-008 later holds time/duration constant while comparing diatonic, key-relative, contour-only, interval-relative, absolute-chromatic, or staff-like pitch mappings.
 
 ## 7. Experiment definitions and runs
 
@@ -332,7 +375,7 @@ A reproduction command fails if a pinned component is unavailable or a content h
 
 ### Decision
 
-Sprint 1 uses a headless workbench core, declarative JSON recipe/experiment files, CLI discovery/validation/run commands, and a generated static comparison page. Live browser controls are deferred.
+Sprint 1 uses a headless workbench core, declarative JSON recipe/experiment files, CLI discovery/validation/run commands, and a generated static comparison page. Live browser controls are deferred subject to A-011. The Sprint report must record recipe-edit time, discovery/diagnostic comprehension, rerun/reproduction friction, implementation changes required for recipe-only experiments, and whether live preview is necessary.
 
 This is the smallest sound interaction model because the Product Owner can change selections and options without editing TypeScript, outputs are reviewable in a browser, and the implementation proves configuration/reproducibility before introducing UI state.
 

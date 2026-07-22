@@ -1,6 +1,6 @@
 # Repository Structure
 
-Status: Architecture Sprint 0.1 complete — proposed for review  
+Status: Architecture Sprint 0.1 Product Owner amendments complete — proposed for approval
 Architecture baseline: 0.2
 
 ## 1. Workspace layout
@@ -17,10 +17,21 @@ Architecture baseline: 0.2
     workflows/check.yml
 
   Agents/
+    README.md
+    ARCHITECT_PROMPT.md
     00_Project_Constitution/
+      ProjectConstitution.md
+      GuidingPrinciples.md
+      DecisionMaking.md
     01_Product/
-      ArchitectureSprint0.1Handoff.md
+      Vision.md
+      Requirements.md
+      DecisionLog.md
+      AssumptionLog.md
+      Glossary.md
+      Backlog.md
       TraceabilityMatrix.md
+      ArchitectureSprint0.1Handoff.md
     02_Architecture/
       Architecture.md
       CanonicalModel.md
@@ -33,10 +44,15 @@ Architecture baseline: 0.2
       TestingStrategy.md
       TechnicalDecisions.md
       ArchitectureReview.md
+      ArchitectureSprint0.1ProductOwnerReview.md
     03_Corpus/
+      Corpus.md
     04_Experiments/
+      ExperimentRegister.md
     05_Implementation/
+      Sprint0.md
       Sprint1.md
+      AcceptanceTests.md
 
   packages/
     schema/
@@ -55,6 +71,27 @@ Architecture baseline: 0.2
         time/
         specificity/
         provenance/
+      tests/
+
+    harmony/
+      src/
+        contracts/
+        vocabularies/core-v1/
+        formatting/
+      tests/conformance/
+
+    capabilities/
+      src/
+        contracts/
+        evidence/
+        diagnostics/
+      tests/
+
+    capability-analysis/
+      src/
+        arrangement/
+        renderer/
+        environment/
       tests/
 
     pitch/
@@ -98,7 +135,6 @@ Architecture baseline: 0.2
       src/
         recipes/
         strategies/
-        capability/
         compatibility/
         experiments/
         manifests/
@@ -180,34 +216,49 @@ Architecture baseline: 0.2
 
 ## 2. Package dependency direction
 
+Arrows point from a consumer to a package it may import. The neutral `capabilities` package owns contracts only; analyzers and orchestrators remain separate.
+
 ```text
 schema
-  ^
+
 model <--- pitch
-  ^        ^
-  |        |
-validator  |
-  ^        |
-patterns   |
-  ^        |
-normalizer +---- transposition
-  ^                   ^
-  |                   |
-  +-------- learning  |
-  ^            ^      |
-  |            |      |
-projection <---+------+
+  ^         ^
+  |         |
+harmony ----+
   ^
   |
-layout <---- workbench
-  ^             ^
-  |             |
-renderer-html   |
-  ^             |
-  +---------- cli (composition root)
+validator
+  ^
+  |
+patterns
+  ^
+  |
+normalizer <--- transposition
+  ^
+  |
+  +---------------- learning ----------------> capabilities
+  |                     |                         ^
+  |                     +-- produces verified ---+
+  |                         plan profiles
+  |
+  +---- capability-analysis --------------------> capabilities
+  |        |
+  |        +-- analyzes arrangement, renderer, environment artifacts
+  |
+projection <--- verified learning plan + resolved recipe
+  ^
+  |
+layout <--- workbench --------------------------> capabilities
+  ^          |
+  |          +-- composes artifact profiles and strategy descriptors
+  |
+renderer-html
+  ^
+  |
+cli (composition root; imports public APIs and registers implementations)
 
 corpus-tools -> schema/model/validator/normalizer/learning/workbench/renderer-html
-test-fixtures -> schema/model contracts only
+test-fixtures -> schema/model/harmony contracts only
 workbench-web (deferred) -> public workbench/learning/CLI-service adapters only
 ```
 
@@ -215,12 +266,15 @@ Normative rules:
 
 1. `model` never imports workbench, learning, projection, layout, renderer, CLI, or corpus tools.
 2. `normalizer` never imports learning or workbench; learning chunks are not normalization output.
-3. `learning` imports normalized/model contracts and workbench capability contract through a small interface, but not renderer implementations.
-4. `workbench` owns registry/recipe/experiment orchestration and receives implementations through dependency injection; it does not import CLI.
-5. `layout` owns strategy implementations and scene contracts; it does not resolve recipes or inspect canonical JSON.
-6. `renderer-html` consumes `LayoutPlan` only.
-7. `cli` is the composition root that registers built-in pitch, learning, layout, and renderer strategies.
-8. `workbench-web` cannot define schemas or musical semantics; when implemented, it calls public workbench APIs.
+3. `capabilities` imports only shared diagnostic/reference primitives and owns non-musical artifact-scoped contracts.
+4. `harmony` imports model/pitch primitives and owns controlled quality vocabularies and derived labels.
+5. `capability-analysis` imports model/normalizer/capabilities plus renderer/environment public descriptors; it cannot inspect recipes or learning plans.
+6. `learning` imports normalized/model/capabilities contracts, but never `workbench` or renderer implementations.
+7. `workbench` owns registry/recipe/experiment orchestration and composite compatibility evaluation; it receives artifact profiles through public APIs and does not import CLI.
+8. `layout` owns strategy implementations and scene contracts; it does not resolve recipes or inspect canonical JSON.
+9. `renderer-html` consumes `LayoutPlan` only.
+10. `cli` is the composition root that registers built-in pitch, harmony, learning, layout, and renderer strategies.
+11. `workbench-web` cannot define schemas or musical semantics; when implemented, it calls public workbench APIs.
 
 A dependency-cycle check runs in `npm run check`.
 
@@ -231,6 +285,7 @@ A dependency-cycle check runs in `npm run check`.
 Owns JSON Schema 2020-12 for:
 
 - canonical schema `0.1.0`;
+- chord-quality vocabulary schema `0.1.0`;
 - recipe format `0.1.0`;
 - learning transformation definition `0.1.0`;
 - learning plan `0.1.0`;
@@ -242,6 +297,24 @@ Exports schema IDs, validators, structural diagnostic mapping, valid/invalid exa
 ### `@mnls/model`
 
 Owns canonical TypeScript types, rational arithmetic, stable IDs, specificity wrappers, typed references, canonical provenance declarations, immutable helpers, and canonical serializer contracts. `Arrangement` has no learning-plan/recipe fields.
+
+### `@mnls/harmony`
+
+Owns immutable registered `ChordQualityVocabulary` versions, `ChordQualityRef` resolution, aliases/display labels, fixture-required pitch-class semantics, and vocabulary conformance. Unknown quality IDs fail. Aliases never become canonical identity. It contains no rendering layout and does not treat free-form analysis annotations as semantics.
+
+### `@mnls/capabilities`
+
+Owns dependency-neutral contracts for `CapabilityEvidence`, `CapabilityRequirement`, `ArrangementCapabilityProfile`, `LearningPlanCapabilityProfile`, `RendererCapabilityProfile`, `EnvironmentCapabilityProfile`, `TreatmentInputProfile`, and `CompatibilityInput`. It contains no analyzers and cannot depend on `learning` or `workbench`.
+
+### `@mnls/capability-analysis`
+
+Owns analyzers that derive `ArrangementCapabilityProfile` from validated canonical/normalized music and renderer/environment profiles from installed implementations. It imports neutral contracts but not recipes. It cannot inspect learning plans; plan profiles are produced by `@mnls/learning` after verification.
+
+```text
+analyzeArrangementCapabilities(arrangement, normalized): ArrangementCapabilityProfile
+analyzeRendererCapabilities(renderer): RendererCapabilityProfile
+analyzeEnvironmentCapabilities(environment): EnvironmentCapabilityProfile
+```
 
 ### `@mnls/pitch`
 
@@ -275,7 +348,6 @@ Owns:
 
 - transformation definition/descriptor interfaces;
 - transformation registry;
-- capability compatibility checks;
 - deterministic execution;
 - learning-plan validation and hashing;
 - plan-local overrides;
@@ -286,8 +358,9 @@ Public API:
 ```text
 listLearningStrategies(): LearningTransformationDescriptor[]
 resolveLearningTransformation(ref): StageResult<RegisteredLearningTransformation>
-generateLearningPlan(arrangement, capabilityProfile, definition, parameters): StageResult<LearningPlan>
+generateLearningPlan(arrangement, arrangementProfile, definition, parameters): StageResult<LearningPlan>
 verifyLearningPlan(plan, arrangement, definition): StageResult<VerifiedLearningPlan>
+analyzeLearningPlanCapabilities(verifiedPlan, arrangement): LearningPlanCapabilityProfile
 ```
 
 ### `@mnls/workbench`
@@ -295,7 +368,7 @@ verifyLearningPlan(plan, arrangement, definition): StageResult<VerifiedLearningP
 Owns:
 
 - `RepresentationRecipe`, `StrategyDescriptor`, `StrategyCatalog` contracts;
-- arrangement capability analysis;
+- composite compatibility evaluation;
 - recipe structural/option resolution;
 - compatibility classification;
 - experiment definition/run orchestration;
@@ -305,10 +378,9 @@ Owns:
 Public API:
 
 ```text
-analyzeCapabilities(arrangement): ArrangementCapabilityProfile
 listStrategies(kind?): StrategyDescriptor[]
 resolveRecipe(recipe, catalog): StageResult<ResolvedRecipe>
-validateCompatibility(profile, resolvedRecipe, learningPlan?): CompatibilityReport
+validateCompatibility(input: CompatibilityInput, resolvedRecipe): CompatibilityReport
 runTreatment(input): StageResult<TreatmentRun>
 runExperiment(definition, resolver): StageResult<ExperimentRun>
 ```
@@ -411,6 +483,8 @@ npm run check
 music validate <file> [--format text|json]
 music normalize <file> --out <file>
 music transpose <file> --interval <semantic-interval> --out <file>
+music harmony vocabulary list
+music harmony quality describe <quality-ref>
 music strategy list [--kind <kind>] [--format text|json]
 music strategy describe <id>@<version>
 music recipe validate <recipe> --arrangement <file>

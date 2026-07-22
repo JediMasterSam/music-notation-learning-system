@@ -1,6 +1,6 @@
 # Learning Transformations
 
-Status: Architecture Sprint 0.1 complete — proposed for review  
+Status: Architecture Sprint 0.1 Product Owner amendments complete — proposed for approval
 Architecture baseline: 0.2  
 Applies to: Prototype 1
 
@@ -8,9 +8,9 @@ Applies to: Prototype 1
 
 A learning transformation is a reusable, versioned, deterministic pedagogical strategy applied to a validated arrangement. It produces a derived `LearningPlan`. Learning chunks belong to that plan, not to the canonical arrangement.
 
-The learning package owns transformation definitions, compatibility checking, execution, plan validation, deterministic IDs, provenance, and overrides. The canonical model owns only the musical material and stable references that plans target.
+The learning package owns transformation definitions, execution, plan validation, deterministic IDs, provenance, overrides, and verified-plan capability analysis. It consumes neutral arrangement capability contracts from `@mnls/capabilities`; it does not import workbench orchestration. The canonical model owns only the musical material and stable references that plans target.
 
-This boundary implements R-010, R-030, R-042 and Architecture Sprint 0.1 handoff §4 without choosing a default learning strategy.
+This boundary implements R-010, R-030, R-042, R-054–R-055, D-026, and Architecture Sprint 0.1 handoff §4 without choosing a default learning strategy.
 
 ## 2. Data flow
 
@@ -24,6 +24,8 @@ Canonical Arrangement
   -> deterministic transformation execution
   -> LearningPlan
   -> optional plan-local overrides
+  -> verify against arrangement ID/hash and deterministic regeneration
+  -> LearningPlanCapabilityProfile
   -> learning-plan view projection
 ```
 
@@ -73,6 +75,22 @@ LearningTransformationRegistry {
 ```
 
 Registry rules match representation strategies: immutable versions, unique IDs, conformance tests, deterministic registration, and no runtime arbitrary-code loading in Prototype 1.
+
+### 4.1 Capability dependency and ownership
+
+`LearningTransformationDescriptor.requiresCapabilities` may reference only arrangement capability requirements when generating a plan. These contracts come from `@mnls/capabilities`. The learning engine neither computes canonical arrangement capabilities nor depends on `@mnls/workbench`.
+
+After plan generation and verification, learning computes a separate `LearningPlanCapabilityProfile` containing evidence such as:
+
+- `learning-plan.valid`;
+- `learning-plan.matches-arrangement`;
+- `learning-plan.has-chunks`;
+- `learning-plan.has-role-filters`;
+- `learning-plan.has-hand-filters`;
+- `learning-plan.has-prerequisites`;
+- `learning-plan.has-transition-practice`.
+
+Each evidence item cites the verified plan hash, matching arrangement hash, and stable chunk/relationship references. An unverified or stale plan cannot provide capabilities.
 
 ## 5. `LearningPlan`
 
@@ -267,6 +285,7 @@ music learning strategy list
 music learning validate <definition.json>
 music learning plan <arrangement.json> --transformation <definition.json> --out <plan.json>
 music learning verify <plan.json> --arrangement <arrangement.json>
+music learning capabilities <verified-plan.json> --arrangement <arrangement.json>
 ```
 
 The output plan contains resolved parameter values and hashes. `verify` fails on hash mismatch, stale references, copied canonical payloads, or output that differs from deterministic regeneration.
@@ -284,7 +303,11 @@ Every transformation primitive requires:
 7. specificity preservation in projected content;
 8. transposition invariance of selectors/relationships;
 9. override precedence and provenance tests;
-10. application to at least two arrangements before promotion beyond local experiment status.
+10. application to at least two arrangements before promotion beyond local experiment status;
+11. stale arrangement-hash rejection;
+12. plan capabilities cannot forge canonical capabilities;
+13. the same verified plan can support multiple recipes without changing arrangement capability output;
+14. every plan capability includes authoritative plan/arrangement hashes and evidence refs.
 
 Sprint 1 specifically asserts that `idea-boundary@1` with identical parameters generates valid plans for two fixtures and produces structured diagnostics for a fixture without musical ideas.
 

@@ -1,6 +1,6 @@
 # Pattern Engine
 
-Status: Architecture Sprint 0.1 reviewed — no material amendment required  
+Status: Architecture Sprint 0.1 Product Owner amendments complete — proposed for approval
 Architecture baseline: 0.2
 
 ## 1. Purpose and boundary

@@ -1,6 +1,6 @@
 # Testing Strategy
 
-Status: Architecture Sprint 0.1 complete — proposed for review  
+Status: Architecture Sprint 0.1 Product Owner amendments complete — proposed for approval
 Architecture baseline: 0.2
 
 ## 1. Objectives
@@ -16,15 +16,17 @@ Automated tests prove software behavior. They do not prove that a treatment impr
 3. pitch strategy conformance;
 4. normalization and provenance;
 5. semantic transposition;
-6. arrangement capability analysis;
-7. learning transformation and plan validation;
-8. recipe resolution and strategy compatibility;
-9. projection;
-10. strategy-driven layout;
-11. HTML/SVG semantic DOM, security, and accessibility;
-12. experiment/run reproducibility;
-13. corpus regression and vocabulary/coverage reporting;
-14. human learning protocol outside automated gates.
+6. controlled harmony-vocabulary conformance;
+7. artifact-scoped arrangement/plan/renderer/environment capability analysis;
+8. learning transformation and plan validation;
+9. recipe resolution and composite strategy compatibility;
+10. projection;
+11. strategy-driven layout;
+12. HTML/SVG semantic DOM, security, and accessibility;
+13. experiment/run reproducibility;
+14. corpus regression and vocabulary/coverage reporting;
+15. workbench-usability evidence under A-011;
+16. human learning protocol outside automated gates.
 
 ## 3. Mandatory construct rule
 
@@ -75,7 +77,8 @@ Validate separate schema families:
 - learning transformation definition `0.1.0`;
 - learning plan `0.1.0`;
 - experiment definition `0.1.0`;
-- resolved recipe/run manifest `0.1.0`.
+- resolved recipe/run manifest `0.1.0`;
+- chord-quality vocabulary `0.1.0`.
 
 Required negative tests:
 
@@ -86,7 +89,13 @@ Required negative tests:
 - unpinned strategy/transformation version;
 - missing experiment controlled/changed variable declarations;
 - specificity absent-value state contains `value`;
-- canonical renderer coordinates/line breaks.
+- canonical renderer coordinates/line breaks;
+- unrestricted chord-quality string;
+- unknown chord-quality vocabulary/version/ID;
+- alias used as canonical quality identity;
+- authoritative `function` or `romanNumeral` string;
+- recipe-authored capability evidence;
+- arrangement profile containing learning-plan, renderer, environment, or experiment capabilities.
 
 Schema examples compile in CI and are cross-checked against TypeScript public types.
 
@@ -103,11 +112,26 @@ Retain Sprint 0 tests for:
 - patterns/repetitions/variations/alternate endings and cycles;
 - lyrics anchored without whitespace;
 - familiar-shape hint equivalence/suppression;
+- controlled `ChordQualityRef` resolution and derived labels;
+- free-form harmonic annotations remain annotation-only;
 - lawful source records.
 
 Add a canonical-boundary test asserting that deleting every recipe, plan, and experiment file leaves canonical validation/meaning unchanged.
 
-## 7. Pitch strategy conformance
+## 7. Controlled harmony vocabulary
+
+For each registered immutable vocabulary version assert:
+
+- known `ChordQualityRef` values resolve to semantic definitions;
+- unknown vocabulary, version, or quality IDs fail with stable diagnostics;
+- aliases resolve only during authoring/display lookup and never serialize as semantic identity;
+- display labels derive from validated root/quality/degrees/options;
+- vocabulary registration order does not change results;
+- new shared quality admission requires a governance/corpus record;
+- `HarmonicAnalysisAnnotation` text/system/tags cannot affect validation, transposition, capability analysis, learning transformations, projection selection, layout, rendering strategy selection, or compatibility;
+- no code branches on arbitrary Roman-numeral/function text.
+
+## 8. Pitch strategy conformance
 
 Every canonical `PitchStrategy` implementation passes:
 
@@ -122,7 +146,7 @@ Every canonical `PitchStrategy` implementation passes:
 
 Every visual `PitchMappingStrategy` separately passes its descriptor contract. Canonical pitch representation and y mapping are never conflated.
 
-## 8. Specificity preservation suite
+## 9. Specificity preservation suite
 
 For each state — required, suggested, optional, intentionally unspecified, unknown — assert identity through:
 
@@ -135,7 +159,7 @@ load -> schema -> semantic -> normalize -> transpose
 
 No stage may add a value to absent-value states. DOM/accessibility output contains state text when relevant. Hand-filter and overlay tests preserve unknown/unspecified rather than infer assignment.
 
-## 9. Normalization and provenance
+## 10. Normalization and provenance
 
 Required assertions:
 
@@ -152,7 +176,7 @@ Required assertions:
 
 H-C exercises repeat/alternate-ending provenance. C-D exercises harmony distinctions through normalization.
 
-## 10. Transposition tests
+## 11. Transposition tests
 
 ### Invariants
 
@@ -169,17 +193,41 @@ H-C exercises repeat/alternate-ending provenance. C-D exercises harmony distinct
 - normalize then transpose equals transpose then normalize where the pattern contract declares commutativity;
 - generating a learning plan before versus after transposition yields equal selectors/relationships and different only in arrangement hashes where expected.
 
-## 11. Capability analysis tests
+## 12. Artifact-scoped capability tests
 
-- exact timing/pitch evidence derived from selected events;
-- partial/unknown hand states distinguished;
-- musical-idea capability present only when valid ideas exist;
-- pitch-class-set capability depends on registered strategy support;
-- evidence refs stable and relevant;
-- recipe or fixture metadata cannot forge a capability;
-- capability profile deterministic and hashable.
+### Arrangement profile
 
-## 12. Learning transformation tests
+- exact timing/pitch evidence derives only from validated canonical/normalized events;
+- partial/unknown hand states remain distinct;
+- musical-idea capability appears only when valid ideas exist;
+- pitch-class-set comparison depends on registered canonical pitch/harmony support;
+- no learning-plan, renderer, environment, or experiment capability appears;
+- deleting all plans leaves the profile byte-identical;
+- recipe/fixture metadata cannot forge evidence;
+- every item cites canonical authority, artifact/hash, and relevant refs.
+
+### Learning-plan profile
+
+- generated only after plan hash, arrangement ID/hash, references, and deterministic regeneration verify;
+- stale arrangement hash yields no profile and stable error;
+- plan evidence cites plan and canonical targets;
+- plan cannot forge exact timing, pitch, harmony, role, or hand authority;
+- the same valid plan supports multiple recipes without changing arrangement profile output.
+
+### Renderer and environment profiles
+
+- installed renderer/environment descriptors produce separate profiles;
+- unsupported overlay/accessibility features are not placed on the arrangement;
+- profiles and implementation/environment hashes are deterministic.
+
+### Composite compatibility
+
+- a requested learning overlay without a verified matching plan is incompatible;
+- all four statuses are covered;
+- diagnostics identify required source and authoritative evidence or absence;
+- no fallback strategy/profile is synthesized.
+
+## 13. Learning transformation tests
 
 ### Registry and definition
 
@@ -209,7 +257,7 @@ H-C exercises repeat/alternate-ending provenance. C-D exercises harmony distinct
 - regeneration matches committed expected plan;
 - prerequisite graph cycle rejected.
 
-## 13. Recipe and strategy tests
+## 14. Recipe and strategy tests
 
 ### Registry
 
@@ -245,22 +293,24 @@ Required examples:
 - display of unknown hands without isolation: supported with limitation;
 - duration extent with unknown duration: incompatible;
 - grid resolution too coarse for onset: incompatible or layout error, never rounding;
-- requested learning-plan overlay without a valid plan: incompatible;
+- requested learning-plan overlay without a verified matching plan: incompatible;
+- stale plan hash: error before compatibility;
+- renderer overlay unsupported by renderer profile: incompatible or acknowledged limitation;
 - false hint overlay capability: incompatible/suppressed upstream.
 
 Assert no fallback strategy is selected.
 
-## 14. Projection tests
+## 15. Projection tests
 
 - same normalized source and selected content for M-A across both recipes;
 - role/hand filters preserve structural/time context;
-- optional learning-plan chunk overlay references plan and canonical sources;
+- optional learning-plan chunk overlay requires a verified matching plan profile and references plan/canonical sources;
 - disclosure hides only allowed information;
 - canonical harmony remains primary over hints;
 - projected nodes contain no final coordinates;
 - limitations/provenance retained.
 
-## 15. Layout strategy tests
+## 16. Layout strategy tests
 
 ### 15.1 Exact arithmetic
 
@@ -301,7 +351,7 @@ Assert:
 
 Swap compatible label/overlay options without changing time/pitch geometry. Change time strategy without changing canonical/projection content. Invalid cross-strategy combinations fail before layout.
 
-## 16. Rendering, security, and accessibility
+## 17. Rendering, security, and accessibility
 
 ### Semantic DOM assertions
 
@@ -330,10 +380,15 @@ Property-based malicious text in titles, lyrics, labels, recipe names, experimen
 - treatment limitations available in text;
 - exact pitch/time available independent of spatial perception.
 
-## 17. Experiment reproducibility
+## 18. Experiment reproducibility
 
 - definition schema and reference resolution;
+- E-007 research question states proportional horizontal onset/duration versus explicit grid;
 - controlled and changed variables nonempty and disjoint unless explicitly justified;
+- E-007 holds canonical/normalized source, absolute-chromatic y mapping, exact labels, accessibility data, and renderer environment constant;
+- changed variables are time mapping, duration encoding, and temporal reference overlay;
+- output/docs do not call E-007 a complete pitch-mapping comparison;
+- E-008 records future pitch-mapping comparison with time/duration held constant;
 - fixture/recipe/transformation hashes pinned;
 - rerun produces byte-identical treatment outputs and manifests;
 - changing one declared changed variable changes recipe/run hash;
@@ -343,11 +398,11 @@ Property-based malicious text in titles, lyrics, labels, recipe names, experimen
 - human observation records are not generated by automated run and are stored separately;
 - no output language claims a treatment is effective or final.
 
-## 18. Corpus regression and coverage
+## 19. Corpus regression and coverage
 
 `music corpus test` reports:
 
-- C-G01–C-G09 category coverage;
+- C-G01–C-G11 category coverage;
 - requirements/ADRs/handoff obligations exercised;
 - strategy/transformation/recipe coverage;
 - source-lawfulness status;
@@ -356,22 +411,31 @@ Property-based malicious text in titles, lyrics, labels, recipe names, experimen
 
 New shared musical pattern admission still requires E-005 evidence. New visual strategies do not count as canonical learner vocabulary until Product Owner approval, but their experiment identifiers are reported separately.
 
-## 19. Acceptance-test mapping
+## 20. Acceptance-test mapping
 
 | Acceptance | Sprint 1 coverage |
 |---|---|
 | AT-001 | M-A/M-B exact notes, no invented harmony |
-| AT-002 | H-C exact chord timing contract; explicit grid time tests |
-| AT-003–AT-005 | C-D canonical/normalization/projection contract tests |
+| AT-002 | H-C exact chord timing; explicit-grid time tests |
+| AT-003–AT-005 | C-D canonical/normalization/projection contracts |
 | AT-006 | H-C repetition/ending provenance |
 | AT-007 | projection contract; full role UI may defer |
 | AT-008 | M-A transposition plus treatment/plan invariants |
 | AT-009–AT-010 | C-D hint validation/projection tests |
-| AT-011 | experiment schema supports separate human observation fields; no automated learning claim |
-| AT-012 | lyric model/escaping contract tests; functional lyric treatment may defer |
-| AT-013 | no final syntax, recipe, or treatment default dependency |
+| AT-011 | separate human-observation artifact; no automated learning claim |
+| AT-012 | lyric model/escaping contracts; functional breadth may defer |
+| AT-013 | no final syntax/default scan |
+| AT-014 | arrangement rejects chunks; one transformation creates reference-only plans for M-A/M-B |
+| AT-015 | same source renders through two declarative recipes without source edits |
+| AT-016 | separate arrangement/plan/renderer/environment profiles and evidence authority |
+| AT-017 | stale/missing plan overlay incompatibility; valid plan reuse |
+| AT-018 | controlled quality IDs, aliases, and derived labels |
+| AT-019 | annotations cannot affect semantics or branching |
+| AT-020 | immutable reproducible run evidence separate from observations |
+| AT-021 | E-007 controlled/changed-variable and shared-y assertions |
+| AT-022 | Sprint report contains A-011 workbench-usability evidence |
 
-## 20. CI and local gates
+## 21. CI and local gates
 
 `npm run check` order:
 
@@ -379,22 +443,28 @@ New shared musical pattern admission still requires E-005 evidence. New visual s
 2. lint;
 3. typecheck/build;
 4. schema examples/type parity;
-5. unit/property tests;
-6. integration/CLI tests;
-7. fixture generation and canonical hash checks;
-8. learning-plan regeneration verification;
-9. two-treatment deterministic rendering;
-10. accessibility/security checks;
-11. experiment reproduction verification;
-12. corpus/traceability/coverage reports.
+5. chord-quality vocabulary conformance;
+6. artifact-profile authority/dependency tests;
+7. unit/property tests;
+8. integration/CLI tests;
+9. fixture generation and canonical hash checks;
+10. learning-plan regeneration/profile verification;
+11. two-treatment deterministic rendering;
+12. accessibility/security checks;
+13. experiment reproduction/E-007 control verification;
+14. corpus/traceability/coverage reports.
 
 A fresh clone must run with `npm ci` and no uncommitted generated differences after checks.
 
-## 21. Human learning validation
+## 22. Workbench usability validation
+
+The Sprint 1 report must record A-011 evidence: time to create/modify a recipe, strategy-discovery comprehension, option-schema/diagnostic sufficiency, implementation changes needed for a recipe-only experiment, treatment-switching friction, rerun/reproduction friction, variant-saving friction, and whether live preview appears necessary. This evaluates the research workbench, not learner outcomes.
+
+## 23. Human learning validation
 
 Experiment definitions may specify tasks and observation fields for comprehension, memory, execution, coordination, time, errors, and subjective friction. Automated tests only verify that these dimensions can be recorded separately. Human results require Product Owner/Validation Agent procedure and cannot be synthesized from render output.
 
-## 22. Rejected approaches
+## 24. Rejected approaches
 
 - screenshot approval as semantic proof;
 - tests specialized to duplicated treatment fixtures;

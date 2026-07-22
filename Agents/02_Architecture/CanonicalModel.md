@@ -1,8 +1,10 @@
 # Canonical Model
 
-Status: Architecture Sprint 0.1 complete — proposed for review  
+Status: Architecture Sprint 0.1 Product Owner amendments complete — proposed for approval
 Canonical schema target: 0.1.0  
 Architecture baseline: 0.2
+
+Product basis: R-004–R-025, R-035–R-041, R-048, R-053–R-055; D-002–D-016, D-019–D-021, D-026; ADR-002–ADR-005, ADR-008, ADR-010–ADR-011, ADR-018.
 
 ## 1. Model purpose
 
@@ -403,14 +405,14 @@ ChordEvent extends EventBase {
   slashBass?: SpecificValue<PitchClassValue>;
   voicing: SpecificValue<Voicing>;
   hints?: PedagogicalHint[];
-  analysisMetadata?: { function?: string; romanNumeral?: string; tags?: string[] }
+  analysisAnnotations?: HarmonicAnalysisAnnotation[]
 }
 ```
 
 **Purpose:** harmony event with independent inversion, slash bass, and upper voicing.  
-**Invariants:** `voicing` is mandatory as a specificity wrapper, so absence cannot imply a default; inversion never inferred from slash bass; slash bass never determines upper voicing; canonical harmony remains primary.  
+**Invariants:** `voicing` is mandatory as a specificity wrapper, so absence cannot imply a default; inversion never inferred from slash bass; slash bass never determines upper voicing; canonical harmony remains primary; chord quality must resolve through the pinned controlled vocabulary; analysis annotations cannot affect semantics.  
 **Transposition:** root, alterations, slash bass, voicing pitches, and hints transpose semantically; quality and structural metadata remain unless strategy says otherwise.  
-**Errors:** collapsed chord-string fields, contradictory required voicing, hint inconsistency.  
+**Errors:** collapsed chord-string fields, unknown chord-quality reference, contradictory required voicing, hint inconsistency, or any semantic dependency on free-form analysis annotations.  
 **Normalization:** keeps all distinctions and IDs.  
 **Tests:** AT-002–AT-005, AT-008–AT-010.
 
@@ -422,21 +424,36 @@ Invalid: one string `"Am7/C/A(first inversion)"` standing in for harmony, slash 
 ```text
 ChordAnalysis {
   root: PitchClassValue;
-  quality: string;
+  quality: ChordQualityRef;
   extensions?: ChordDegree[];
   alterations?: Alteration[];
   omissions?: SpecificValue<ChordDegree[]>;
   addedTones?: ChordDegree[]
 }
+
+ChordQualityRef {
+  vocabularyId: string;
+  vocabularyVersion: string;
+  qualityId: string;
+}
+
+HarmonicAnalysisAnnotation {
+  id: string;
+  text: string;
+  system?: string;
+  tags?: string[];
+  authority: "annotation";
+}
 ```
 
-**Invariants:** quality/degree vocabulary is versioned; alterations and omissions target valid degrees; display spelling is produced by pitch/harmony formatters, not stored as authority.  
-**Transposition:** root transposes; quality/degrees remain.  
-**Errors:** contradictory add/omit of the same required degree, invalid degree.  
-**Rejected alternative:** opaque chord symbol string.
+**Invariants:** `quality` resolves through a pinned immutable registered vocabulary; `qualityId` is semantic identity; aliases and display labels are derived; unknown vocabulary/version/quality IDs fail. Alterations and omissions target valid degrees. `analysisAnnotations` are escaped non-authoritative metadata. No semantic validator, transposer, capability analyzer, learning transformation, projector, layout strategy, or renderer strategy may parse or branch on annotation text, `system`, or tags. Sprint 1 does not render analysis annotations.  
+**Transposition:** root transposes; quality/degrees remain; annotations remain byte-identical and have no transposition effect.  
+**Errors:** unknown quality reference, contradictory add/omit of the same required degree, invalid degree, annotation used as authority.  
+**Versioning:** vocabulary versions are immutable. Admission of a shared quality follows canonical-vocabulary governance and corpus evidence. A changed semantic definition receives a new vocabulary version or quality ID.  
+**Rejected alternatives:** opaque chord symbol strings; unrestricted `quality`, `function`, or `romanNumeral` strings as canonical semantics; aliases as semantic IDs.
 
-Valid: root A, minor quality, extension 7.  
-Invalid: root encoded only by a rendered `Am7` label.
+Valid: root A, `{ vocabularyId: "mnls.chord-quality", vocabularyVersion: "1.0.0", qualityId: "minor" }`, extension 7.  
+Invalid: `quality: "kind of minor-ish"`; root encoded only by rendered label `Am7`; `romanNumeral: "V7/V maybe"` used by transposition or rendering logic.
 
 ### 7.5 `Inversion`
 

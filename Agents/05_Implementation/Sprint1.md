@@ -1,6 +1,6 @@
 # Implementation Sprint 1
 
-Status: Revised after Architecture Sprint 0.1  
+Status: Revised for Architecture baseline 0.2 — implementation begins after Product Owner approval  
 Sprint objective version: 0.2  
 Production implementation authorized only within this plan
 
@@ -25,12 +25,26 @@ Read in this order before implementation:
 9. `Agents/01_Product/ArchitectureSprint0.1Handoff.md`
 10. `Agents/03_Corpus/Corpus.md`
 11. `Agents/04_Experiments/ExperimentRegister.md`
-12. all files in `Agents/02_Architecture`, beginning with `Architecture.md`
-13. this Sprint 1 plan
+12. `Agents/05_Implementation/AcceptanceTests.md`
+13. `Agents/02_Architecture/ArchitectureSprint0.1ProductOwnerReview.md`
+14. all other files in `Agents/02_Architecture`, beginning with `Architecture.md`
+15. this Sprint 1 plan
 
 Authority order remains Constitution, approved product decisions/direction, requirements, acceptance criteria, architecture decisions, sprint instructions, implementation convenience.
 
-## 3. Non-negotiable implementation constraints
+## 3. Governing workbench decisions and requirements
+
+Sprint 1 implements Product Decisions D-025 through D-029 and stable requirements R-051 through R-058. In particular:
+
+- D-025/R-051 establish the experimental-workbench objective;
+- D-026/R-054–R-055 establish reusable transformations and derived-plan ownership;
+- D-027/R-052–R-053/R-057 establish declarative recipes, artifact-scoped compatibility, and same-source treatments;
+- D-028/R-058 require the controlled proportional horizontal time-and-duration experiment without selecting a winning notation;
+- D-029/R-056 separate experiment definitions, automated run evidence, and human observations.
+
+ADR-011 through ADR-018 define the technical implementation boundaries for these approved decisions. Historical `H-*` labels are crosswalk references only and must not be used as independent authority.
+
+## 4. Non-negotiable implementation constraints
 
 - Do not invent final notation punctuation, a final visual vocabulary, or a default recipe.
 - Do not describe either Sprint 1 treatment as the final notation system.
@@ -38,14 +52,14 @@ Authority order remains Constitution, approved product decisions/direction, requ
 - Learning chunks exist only in derived `LearningPlan` artifacts and reference canonical content without copying it.
 - Recipes contain no musical events or executable code.
 - Strategy/transform versions are exact and reproducible; no `latest` or silent upgrade.
-- Unsupported combinations produce structured diagnostics; no fallback or musical approximation.
+- Unsupported combinations produce structured diagnostics; no fallback or musical approximation. Capability evidence is artifact-scoped and cannot be authored by recipes.
 - Song/arrangement, role/hand, inversion/slash bass/voicing, structural/learning content, and all five specificity states remain distinct.
-- Pitch operations are semantic; rendered labels are derived.
+- Pitch operations are semantic; rendered labels are derived. Chord quality uses pinned `ChordQualityRef`; arbitrary function/Roman-numeral/tag text is annotation-only and cannot control behavior.
 - Pattern/repetition/variation provenance remains intact.
 - User text is escaped; accessibility does not depend on color.
 - Copyrighted music is not committed without lawful basis.
 
-## 4. Required environment
+## 5. Required environment
 
 At WP-01, select the then-current compatible Node.js LTS and pin exact Node/npm versions in `.nvmrc`, `package.json#engines`, CI, and the Sprint report. Use:
 
@@ -60,7 +74,7 @@ At WP-01, select the then-current compatible Node.js LTS and pin exact Node/npm 
 
 Do not add a frontend framework or runtime plugin loader in Sprint 1.
 
-## 5. Required fixtures and artifacts
+## 6. Required fixtures and artifacts
 
 ### 5.1 M-A — `melody-spatial-a`
 
@@ -104,7 +118,7 @@ Required use: canonical validation, normalization/provenance, AT-002/AT-006 regr
 
 Retain a minimal lawful contract fixture with:
 
-- canonical `Am7`;
+- canonical `Am7` using controlled `mnls.chord-quality@1.0.0/minor`;
 - explicit A slash bass where appropriate;
 - separate inversion state;
 - explicit required upper voicing;
@@ -131,15 +145,15 @@ Commit `learning/transformations/idea-boundary.learning-transform.json`, selecti
 
 Commit `experiments/definitions/spatial-melody-comparison.experiment.json` referencing M-A and both recipes, with:
 
-- research question;
-- controlled variables;
-- changed variables;
+- research question: how proportional horizontal onset/duration compares with an explicit beat/subdivision grid while canonical melody and vertical pitch mapping are held constant;
+- controlled variables including M-A canonical/normalized hash, `mnls.pitch.absolute-chromatic-y@1`, exact labels, accessibility data, renderer/environment policy;
+- changed variables limited to time mapping, duration encoding, and temporal reference overlay;
 - tasks;
 - observation definitions;
 - draft/ready status;
 - no claim of effectiveness.
 
-## 6. Work order and completion gates
+## 7. Work order and completion gates
 
 Complete work packages in order. Do not begin a dependent package until the preceding completion gate passes.
 
@@ -165,11 +179,12 @@ Required:
 Implement JSON Schema 2020-12 for:
 
 1. canonical document;
-2. representation recipe;
-3. learning transformation definition;
-4. learning plan;
-5. experiment definition;
-6. resolved recipe/treatment/experiment manifests.
+2. controlled chord-quality vocabulary;
+3. representation recipe;
+4. learning transformation definition;
+5. learning plan;
+6. experiment definition;
+7. resolved recipe/treatment/experiment manifests.
 
 Required canonical rule: `Arrangement.learningChunks` is invalid.
 
@@ -179,6 +194,8 @@ Required configuration rules:
 - no arbitrary code/raw markup;
 - no canonical event payloads in recipes/plans;
 - discriminated specificity union;
+- controlled `ChordQualityRef` and annotation-only harmonic text;
+- artifact-scoped capability profile schemas with source authority/hash;
 - valid/invalid examples for every root.
 
 Generate or mechanically verify TypeScript type parity.
@@ -194,10 +211,12 @@ Implement:
 - `SpecificValue<T>` five-state union;
 - Song/Arrangement/Section/MusicalIdea/Transition;
 - roles and independent hand assignments;
-- NoteEvent and required harmony contracts;
+- NoteEvent and required harmony contracts using controlled `ChordQualityRef`;
 - pattern/repetition/variation/provenance interfaces required by fixtures;
 - familiar-shape hint contract;
-- semantic validators and structured diagnostics.
+- semantic validators and structured diagnostics;
+- immutable fixture-required chord-quality registry and derived label/alias behavior;
+- `HarmonicAnalysisAnnotation` excluded from all semantic branching.
 
 Do not implement learner-plan ownership in model.
 
@@ -225,20 +244,23 @@ Normalized output contains no recipe, learning chunk, or layout fields.
 
 **Gate:** all fixtures normalize deterministically; H-C repeat/alternate ending provenance passes; canonical hashes remain unchanged.
 
-### WP-06 — Implement capability analysis and strategy catalogs
+### WP-06 — Implement neutral capability contracts, analyzers, and strategy catalogs
 
 Implement:
 
-- `ArrangementCapabilityProfile` with evidence refs;
+- dependency-neutral `@mnls/capabilities` contracts;
+- `@mnls/capability-analysis` for arrangement, renderer, and environment profiles;
+- `ArrangementCapabilityProfile` containing arrangement-derived evidence only;
+- `RendererCapabilityProfile` and `EnvironmentCapabilityProfile`;
+- source-qualified `CapabilityRequirement` and `CompatibilityInput`;
 - `StrategyDescriptor`, `StrategyCatalog`, exact version resolution;
-- representation strategy kinds;
-- learning transformation descriptors/registry;
+- representation strategy kinds and learning transformation descriptors/registry;
 - deterministic registry ordering;
 - `supported`, `supported-with-limitations`, `incompatible`, `unavailable` result model.
 
-Initial capabilities must cover exact onset/duration, exact register pitch, musical ideas, roles, hands status, harmony, pitch-class-set comparison, and learning-plan availability.
+Arrangement capabilities cover exact onset/duration, exact register pitch, musical ideas, sections, roles, hands status, harmony, and pitch-class-set comparison. They must not include learning-plan availability, renderer support, or experiment existence.
 
-**Gate:** capability/registry/compatibility unit tests cover all four statuses and prove recipes cannot forge capabilities.
+**Gate:** all four statuses pass; recipes cannot forge capabilities; deleting plans does not change arrangement analysis; every evidence item identifies authority/artifact/hash/refs; package-direction tests prove learning does not import workbench.
 
 ### WP-07 — Implement reusable learning transformation and derived plans
 
@@ -253,16 +275,18 @@ Required behavior:
 - no copied event payloads;
 - arrangement/transformation/parameter hashes and provenance;
 - plan verification/regeneration;
+- separate `LearningPlanCapabilityProfile` generated only from a verified matching plan;
+- stale arrangement-hash rejection and authoritative plan/canonical evidence refs;
 - structured diagnostic when musical ideas are absent;
 - plan-local override framework sufficient for validation tests; full authoring UI not required.
 
 Generate plans for M-A and M-B using the same definition and parameter file. H-C may be included as additional proof.
 
-**Gate:** both plans validate and regenerate byte-identically; canonical files remain byte-identical; no fixture-specific transformation branch exists.
+**Gate:** both plans validate and regenerate byte-identically; plan profiles verify; stale hashes fail; the same valid plan supports multiple recipes without changing arrangement profiles; canonical files remain byte-identical; no fixture-specific transformation branch exists.
 
 ### WP-08 — Implement recipe resolution and compatibility
 
-Implement recipe load/schema validation, strategy option schemas, exact resolution, fully materialized presentation defaults, resolution hash, cross-strategy compatibility, limitation acknowledgment, and no-fallback behavior.
+Implement recipe load/schema validation, strategy option schemas, exact resolution, fully materialized presentation defaults, resolution hash, composite `CompatibilityInput`, cross-artifact/cross-strategy compatibility, limitation acknowledgment, and no-fallback behavior.
 
 Required invalid examples:
 
@@ -271,7 +295,9 @@ Required invalid examples:
 - exact hand isolation with unknown hands;
 - duration strategy without exact duration;
 - grid subdivision too coarse for selected onset;
-- learning overlay without valid plan;
+- learning overlay without a verified matching plan;
+- stale learning-plan arrangement hash;
+- requested overlay absent from renderer profile;
 - recipe containing musical events or executable content.
 
 **Gate:** both required recipes resolve as supported for M-A; invalid combinations produce stable structured diagnostics and no output.
@@ -283,7 +309,7 @@ Implement `ProjectedView` for:
 - full selected melody phrase/excerpt;
 - exact note events, time, pitch, role, specificity, provenance;
 - structural idea boundaries when requested;
-- optional learning-plan chunk overlay;
+- optional verified learning-plan chunk overlay;
 - exact-pitch label source data;
 - no final coordinates.
 
@@ -306,7 +332,7 @@ Exact onset/duration must map to cells. Insufficient configured subdivision fail
 
 **Gate:** explicit-grid mathematical assertions and semantic scene tests pass for M-A.
 
-### WP-11 — Implement proportional spatial-melody treatment
+### WP-11 — Implement proportional horizontal time/duration treatment
 
 Implement:
 
@@ -325,7 +351,7 @@ Required assertions:
 - exact pitch/onset/duration retained in accessible scene data;
 - basic duration does not require flags, stems, or conventional note-value symbols.
 
-**Gate:** proportional spatial invariant suite passes for M-A and output differs from explicit grid only through recipe/layout-derived artifacts.
+**Gate:** E-007 proportional invariants pass for M-A; canonical source and `mnls.pitch.absolute-chromatic-y@1` are identical across treatments; output differs only through declared time, duration, and temporal-reference strategy selections.
 
 ### WP-12 — Implement safe accessible HTML/SVG and comparison output
 
@@ -387,11 +413,12 @@ Complete:
 - source-policy checks;
 - traceability verification;
 - coverage report listing deferred functional renderer work;
-- Sprint 1 report with versions, commands, fixture sources, output paths/hashes, diagnostics, assumptions, deviations, and screenshots only as supplemental evidence.
+- Sprint 1 report with versions, commands, fixture sources, output paths/hashes, diagnostics, assumptions, deviations, and screenshots only as supplemental evidence;
+- A-011 usability section recording recipe-edit time, discovery comprehension, option/diagnostic sufficiency, implementation changes required for recipe-only experiments, switching/rerun/reproduction/variant friction, and whether live preview is necessary.
 
 **Gate:** `npm run check` passes twice with no generated diff and all Sprint exit criteria evidenced.
 
-## 7. Required output bundle
+## 8. Required output bundle
 
 A successful Sprint 1 demonstration command must be documented, for example:
 
@@ -421,7 +448,7 @@ output/spatial-melody-comparison/
 
 Learning plans are generated separately and may be included in treatment bundles when a recipe enables the learning overlay.
 
-## 8. Definition of done
+## 9. Definition of done
 
 Sprint 1 is complete only when:
 
@@ -436,18 +463,25 @@ Sprint 1 is complete only when:
 - [ ] exact pitch remains visible or accessibly available;
 - [ ] one reusable transformation generates valid plans for M-A and M-B without fixture-specific code;
 - [ ] learning chunks reference canonical content and copy no events;
+- [ ] arrangement, learning-plan, renderer, and environment capabilities remain separate and evidence-backed;
+- [ ] missing/stale plan overlays are incompatible and a valid plan can be reused across recipes without changing arrangement capabilities;
 - [ ] unsupported/unavailable combinations produce structured diagnostics and no fallback;
 - [ ] experiment definition reproduces byte-identical treatment outputs/run manifest;
 - [ ] canonical inputs remain byte-identical across rendering/planning;
 - [ ] all five specificity states survive tested full pipeline;
+- [ ] controlled chord-quality IDs validate, aliases remain non-authoritative, and labels are derived;
+- [ ] free-form harmonic annotations affect no semantic behavior;
 - [ ] harmony/inversion/slash bass/voicing/hint distinctions remain protected by C-D regression;
 - [ ] repetition/alternate ending provenance remains protected by H-C regression;
 - [ ] all text is escaped and generated output passes accessibility gates;
+- [ ] E-007 accurately holds absolute-chromatic y and source constant while changing time/duration/reference strategies;
+- [ ] E-008 future pitch-mapping comparison is recorded;
 - [ ] human observation fields remain separate from automated evidence;
+- [ ] A-011 workbench-usability evidence is recorded;
 - [ ] no output or documentation selects a final notation or default learning strategy;
 - [ ] traceability and Sprint report are complete.
 
-## 9. Explicitly deferred to Sprint 2 or later
+## 10. Explicitly deferred to Sprint 2 or later
 
 Provided all contract tests remain:
 
@@ -464,7 +498,7 @@ Provided all contract tests remain:
 
 A deferred item may be implemented only after mandatory Sprint 1 gates pass and may not delay the required vertical slice.
 
-## 10. Escalation rules
+## 11. Escalation rules
 
 Escalate only when:
 
@@ -488,20 +522,20 @@ Required format:
 
 Ordinary implementation choices must be made and documented, not escalated.
 
-## 11. Exact first prompt for the Implementation Agent
+## 12. Exact first prompt for the Implementation Agent
 
 ```text
 You are the Implementation Agent for Music Notation Learning System Sprint 1, revised after Architecture Sprint 0.1.
 
 Read the governing documents in the exact order listed in Agents/05_Implementation/Sprint1.md. Treat the Constitution, approved Product Owner direction, requirements, acceptance tests, Architecture Sprint 0.1 documents, ADRs, and this sprint plan as authoritative in that order.
 
-Implement the work packages in order, beginning with WP-01. Do not invent final notation punctuation, a final visual vocabulary, a default recipe, or a default learning strategy.
+Implement Product Decisions D-025 through D-029 and requirements R-051 through R-058 through the ordered work packages, beginning with WP-01. Do not invent final notation punctuation, a final visual vocabulary, a default recipe, or a default learning strategy.
 
 Preserve canonical musical authority. Arrangement must not own learning chunks, recipes, experiment definitions, or layout. Learning chunks must exist only in derived LearningPlan artifacts created by reusable, versioned, deterministic transformations and must reference canonical content without copying or mutating it.
 
-Implement declarative versioned representation recipes and evidence-backed strategy capability/compatibility validation. Unsupported or unavailable combinations must produce structured diagnostics; never fall back silently or create musical meaning.
+Implement declarative versioned representation recipes and artifact-scoped strategy capability/compatibility validation. Arrangement, verified learning plan, renderer, and environment evidence must remain separate; learning must not depend on workbench orchestration. Unsupported or unavailable combinations must produce structured diagnostics; never fall back silently or create musical meaning.
 
-Implement the two required functional treatments from the same canonical melody fixture: explicit-grid@1 and proportional-spatial-melody@1. In the spatial treatment, horizontal position represents canonical onset, horizontal extent represents canonical duration, and vertical position consistently represents pitch. Preserve exact pitch/time in accessible output.
+Implement controlled chord-quality semantics and ensure arbitrary function/Roman-numeral annotations cannot affect behavior. Implement the two required functional treatments from the same canonical melody fixture: explicit-grid@1 and proportional-spatial-melody@1. In the proportional treatment, horizontal position represents canonical onset and horizontal extent represents canonical duration. Both treatments use the same absolute-chromatic vertical pitch mapping; do not describe Sprint 1 as a complete pitch-mapping comparison. Preserve exact pitch/time in accessible output.
 
 Implement mnls.learning.idea-boundary@1 and apply the same definition and parameters to at least two compatible fixtures without fixture-specific source branches. Preserve plan and canonical provenance.
 

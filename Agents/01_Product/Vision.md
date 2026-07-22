@@ -1,10 +1,11 @@
 # Product Vision
 
-Status: Approved
+Status: Approved  
+Version: 1.1 workbench clarification
 
 ## Product statement
 
-For piano players who can learn from chord symbols and listening but find chord sheets incomplete and traditional notation cognitively expensive, this product provides a structured, adaptive notation that communicates harmony, timing, bass, accompaniment, voicing, form, repetition, and arrangement identity through a reusable musical vocabulary.
+For piano players who can learn from chord symbols and listening but find chord sheets incomplete and traditional notation cognitively expensive, this product provides structured, adaptive representations that communicate harmony, timing, bass, accompaniment, voicing, form, repetition, and arrangement identity through a reusable musical vocabulary.
 
 ## Target learner
 
@@ -25,31 +26,36 @@ A learner receives an unfamiliar song, understands its structure and harmonic ro
 
 A representation centered on musical ideas, roles, harmony, time, patterns, and explicit arrangement identity can reduce learning effort without discarding musically essential information.
 
-## Prototype 1 goal
+## Prototype 1 objective
 
-Demonstrate that a musician can learn representative material faster than from a chord sheet while using substantially less cognitive effort than traditional notation.
+Prototype 1 is an experimental notation and learning workbench. It constructs, configures, renders, and compares multiple learning-oriented representations and pedagogical transformations derived from the same canonical arrangements. It does not present one treatment as the final product.
+
+The workbench intentionally exposes a larger construction set than the eventual learner-facing product may retain. Its purpose is to produce reproducible evidence about which combinations improve understanding, learning, memory, transposition, and performance.
 
 ## Prototype 1 boundaries
 
 Included:
 
-- piano-oriented representation and rendering;
+- piano-oriented canonical representation and rendering;
 - melody-only material;
 - harmony, bass, accompaniment, primary line, and rhythm roles;
-- beat alignment;
+- beat and subdivision alignment;
 - sections and musical ideas;
 - repetition, variation, alternate endings, and transitions;
-- inversion, slash bass, voicing, chord qualities, extensions, and alterations;
+- inversion, slash bass, voicing, controlled chord qualities, extensions, and alterations;
 - patterns;
-- learning chunks;
+- reusable learning transformations and derived learning plans;
 - role-isolated and hand-isolated views;
-- static output;
-- transposition experiments;
+- declarative representation recipes;
+- multiple reproducible treatments from the same source;
+- headless CLI operation and generated static comparison output for Sprint 1;
+- later browser configurator through a separate adapter if workbench-usability evidence requires it;
+- transposition and representation experiments;
 - lawful manually encoded corpus fixtures.
 
 Excluded:
 
-- graphical editing;
+- graphical music editing;
 - automatic audio transcription;
 - optical music recognition;
 - arrangement generation;
@@ -61,4 +67,5 @@ Excluded:
 - engraving-quality output;
 - comprehensive import;
 - orchestral completeness;
-- final notation punctuation.
+- arbitrary executable recipe code;
+- final notation punctuation, final visual vocabulary, winning treatment, or default learning strategy.

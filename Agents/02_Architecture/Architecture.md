@@ -1,6 +1,6 @@
 # Architecture
 
-Status: Architecture Sprint 0.1 complete — proposed for review  
+Status: Architecture Sprint 0.1 Product Owner amendments complete — proposed for approval
 Architecture baseline: 0.2  
 Applies to: Prototype 1 experimental notation and learning workbench
 
@@ -18,7 +18,7 @@ Architectural goals:
 6. Allow the Product Owner to configure, save, load, reproduce, and compare treatments through versioned data rather than source edits.
 7. Give Sprint 1 an ordered vertical slice proving two functional melody treatments and one reusable learning transformation without selecting a final notation or learning strategy.
 
-Linked product requirements: R-001–R-050. Linked product decisions: D-001–D-024. Amendment source: `01_Product/ArchitectureSprint0.1Handoff.md`.
+Linked product requirements: R-001–R-058. Linked product decisions: D-001–D-029. Amendment sources: `01_Product/ArchitectureSprint0.1Handoff.md` and `02_Architecture/ArchitectureSprint0.1ProductOwnerReview.md`.
 
 ## 2. System boundaries
 
@@ -90,13 +90,16 @@ The renderer serializes a semantic scene and layout plan. It does not infer musi
 |---|---|---|---|---|---|
 | `schema` | JSON Schemas, schema IDs, examples, structural diagnostic mapping for canonical and configuration artifacts | JSON value | structurally valid artifact or diagnostics | semantic defaults, layout | R-004–R-013, R-048; handoff §§4–7 |
 | `model` | canonical TypeScript contracts, stable IDs, rational time, specificity, semantic invariants | structurally valid canonical document | immutable canonical model | learning chunks, recipe options, pixels | R-004–R-025, R-035–R-041 |
-| `pitch` | strategy registry and semantic pitch operations | strategy-tagged pitch values | validated/transposed/comparable values | rendered labels, final pitch mapping | R-006, R-014–R-015, R-050 |
+| `pitch` | strategy registry and semantic pitch operations | strategy-tagged pitch values | validated/transposed/comparable values | rendered labels, final visual pitch mapping | R-006, R-014, R-050 |
+| `harmony` | controlled chord-quality vocabularies, semantic resolution, derived labels/aliases | `ChordQualityRef`, degrees, pitch context | validated quality semantics and display descriptors | arbitrary analysis strings as authority | R-015, R-035–R-041 |
+| `capabilities` | neutral artifact-scoped capability contracts and evidence-source types | validated artifact evidence | typed profiles and composite compatibility input | arrangement analysis, plan verification, orchestration | R-053 |
+| `capability-analysis` | arrangement, renderer, and environment capability analyzers | validated canonical/normalized music and installed implementation descriptors | source-qualified capability profiles | learning-plan inspection, recipe interpretation, evidence fabrication | R-053 |
 | `validator` | cross-reference, temporal, harmonic, hint, contradiction, and extension checks | canonical model plus registries | semantic validation report | mutation or normalization | R-007–R-025, R-035–R-041 |
 | `patterns` | pattern registry, parameter validation, expansion contracts, vocabulary accounting | definitions/instances | semantic event templates plus provenance | rendering shorthand | R-005, R-013, R-022–R-023 |
 | `normalizer` | reference resolution, repeats, variations, endings, timeline materialization, provenance | validated canonical model | immutable disposable `NormalizedArrangement` | canonical persistence, layout, learning plan | R-004, R-011–R-014, R-020–R-024 |
 | `transposition` | graph-wide semantic transposition | canonical/normalized model and target | transposed copy plus diagnostics | string rewriting | R-014, R-040, R-050 |
-| `learning` | transformation registry, compatibility, deterministic plan generation, plan validation/overrides | normalized arrangement, definition, parameters | `LearningPlan` | canonical mutation or copied events | R-010, R-030, R-042; handoff §4 |
-| `workbench` | recipe/experiment models, strategy catalog, capability profile, compatibility, orchestration, manifests | normalized arrangement, recipe, optional plan/experiment | resolved recipes, run manifests, comparison model | musical semantics or learning claims | R-026–R-034, R-042, R-047–R-050; handoff §§5–10 |
+| `learning` | transformation registry, deterministic plan generation, plan verification/overrides, learning-plan capability analysis | normalized arrangement, arrangement capability profile, definition, parameters | `LearningPlan`, `VerifiedLearningPlan`, `LearningPlanCapabilityProfile` | canonical mutation, copied events, workbench orchestration | R-010, R-030, R-042, R-054–R-055 |
+| `workbench` | recipe/experiment models, strategy catalog, composite compatibility evaluation, orchestration, manifests | normalized arrangement, recipe, artifact-scoped capability profiles, optional experiment | resolved recipes, run manifests, comparison model | musical semantics, capability evidence fabrication, or learning claims | R-026–R-034, R-047–R-049, R-051–R-058 |
 | `projection` | view filtering, semantic overlays, pedagogical disclosure | normalized arrangement, optional learning plan, resolved recipe | renderer-neutral `ProjectedView` | semantic reinterpretation | R-026–R-033, R-039, R-042 |
 | `layout` | strategy interfaces and deterministic scene coordinates | projected view, resolved recipe | `LayoutPlan` | canonical meaning or compatibility fallback | R-011–R-012, R-025–R-034; handoff §§5–6 |
 | `renderer-html` | safe accessible HTML/SVG serialization | layout plan and render options | deterministic output bundle | semantic inference, strategy resolution | R-026–R-041, R-049 |
@@ -169,9 +172,28 @@ Ordering is document order where musically meaningful; otherwise stable ID lexic
 
 Every canonical entity that can be referenced has a stable ID. Every normalized event has an append-only provenance chain. Every learning chunk records transformation, rule, canonical references/spans, parameters, and overrides. Every output manifest pins canonical, recipe, strategy, transformation, renderer, and layout versions plus content hashes.
 
-### 6.4 Capability and compatibility contract
+### 6.4 Artifact-scoped capability and compatibility contract
 
-Strategies and transformations declare required/provided capabilities. Capability evidence is computed from validated canonical/normalized semantics. Unsupported combinations return one of `supported`, `supported-with-limitations`, `incompatible`, or `unavailable`. No layer silently approximates or inserts musical defaults.
+Capability contracts live in dependency-neutral `@mnls/capabilities`. Evidence is never a recipe claim. Each profile identifies its authoritative artifact type, ID, content hash, and stable evidence references.
+
+```text
+TreatmentInputProfile {
+  arrangement: ArrangementCapabilityProfile;
+  learningPlan?: LearningPlanCapabilityProfile;
+  renderer: RendererCapabilityProfile;
+  environment?: EnvironmentCapabilityProfile;
+}
+
+CompatibilityInput {
+  inputProfile: TreatmentInputProfile;
+  selectedStrategyDescriptors: StrategyDescriptor[];
+  limitationPolicy: LimitationPolicy;
+}
+```
+
+`ArrangementCapabilityProfile` contains only facts proven from validated canonical/normalized music. `LearningPlanCapabilityProfile` exists only for a verified plan whose arrangement ID and hash match the treatment arrangement. Renderer and environment support are separate evidence sources. Deleting every learning plan leaves arrangement capability output byte-identical.
+
+Strategies and transformations declare source-qualified requirements. Unsupported combinations return one of `supported`, `supported-with-limitations`, `incompatible`, or `unavailable`. A requested learning-plan overlay without a verified matching plan is `incompatible`, not an absent arrangement feature. No layer silently approximates, inserts musical defaults, or lets one artifact forge another artifact's capabilities.
 
 ## 7. Experimental boundaries
 
@@ -183,7 +205,8 @@ Strategies and transformations declare required/provided capabilities. Capabilit
 | E-004 learning chunks | `LearningTransformationDefinition` -> derived `LearningPlan` | chunks stored in arrangement or one transformation made default |
 | E-005 pattern vocabulary | versioned pattern registry and admission report | fixture-specific shared primitives |
 | E-006 familiar-shape hints | hint validator and optional overlay | replacing harmony or default generation |
-| spatial melody | `TimeMappingStrategy`, `DurationEncodingStrategy`, `PitchMappingStrategy`, recipe | treatment-specific canonical music or claims of superiority |
+| E-007 proportional time/duration comparison | `TimeMappingStrategy`, `DurationEncodingStrategy`, temporal overlay, recipe | changing canonical music or claiming a full pitch-mapping comparison |
+| E-008 visual pitch mapping | replaceable `PitchMappingStrategy` with time/duration held constant | treating absolute-chromatic y as approved or final |
 | workbench interaction | headless core plus adapters | browser UI owning semantics/configuration formats |
 
 No experimental strategy becomes a learner-facing default without Product Owner approval and evidence.
@@ -207,7 +230,7 @@ Diagnostic {
 }
 ```
 
-Existing code families remain. New families are `RECIPE`, `STRATEGY`, `CAPABILITY`, `LEARN`, `EXPERIMENT`, and `REPRODUCIBILITY`.
+Existing code families remain. New families are `RECIPE`, `STRATEGY`, `CAPABILITY`, `LEARN`, `HARMONY_VOCAB`, `ANNOTATION_AUTHORITY`, `EXPERIMENT`, and `REPRODUCIBILITY`. Capability diagnostics identify `sourceAuthority`, `sourceArtifactId`, `sourceHash`, and evidence references where applicable.
 
 Exceptions are reserved for programmer defects or unrecoverable environment failures. User-authored invalid data, incompatible treatments, missing capabilities, stale hashes, or unavailable pinned versions produce structured diagnostics and nonzero CLI exit codes.
 
@@ -265,11 +288,11 @@ music corpus test
 music vocabulary report [<file-or-corpus>]
 ```
 
-`npm run check` runs formatting verification, lint, typecheck, unit/integration tests, schema examples, deterministic fixture generation, corpus tests, and reproducibility checks.
+`npm run check` runs formatting verification, lint, typecheck, dependency-direction checks, unit/integration tests, schema examples, chord-quality vocabulary conformance, deterministic fixture generation, corpus tests, and reproducibility checks.
 
 ## 13. Workbench interaction decision
 
-Sprint 1 implements a headless workbench core plus declarative files, CLI commands, and a generated static comparison page. This satisfies configuration without TypeScript changes and creates reproducible review artifacts.
+Sprint 1 implements a headless workbench core plus declarative files, CLI commands, and a generated static comparison page. This is the smallest approved proof under A-011; it satisfies configuration without TypeScript changes only if the Sprint report shows the Product Owner can operate it without recurring implementation help.
 
 A local browser control panel and live preview are deferred to a later sprint behind `workbench-web`. The static-output assumption is therefore narrowed: static generation is sufficient for the Sprint 1 proof, but the full Prototype 1 architecture is not restricted to static-only interaction.
 
@@ -278,7 +301,9 @@ A local browser control panel and live preview are deferred to a later sprint be
 | Risk | Mitigation |
 |---|---|
 | Canonical model becomes renderer or workbench shaped | package direction, schema review, no recipe/layout/plan fields in canonical schemas |
-| Configuration matrix becomes incoherent | capability descriptors, compatibility rules, conformance tests, no silent fallback |
+| Configuration matrix becomes incoherent | source-qualified capability descriptors, composite compatibility input, conformance tests, no silent fallback |
+| Arrangement or plan forges another artifact's capabilities | neutral contracts, authoritative hashes/evidence refs, stale-plan rejection, cross-artifact tests |
+| Opaque harmony text becomes accidental semantics | controlled chord-quality vocabulary; function/Roman-numeral text is annotation-only and excluded from semantic branching |
 | Learning plans become shadow arrangements | reference-only selectors, copied-payload rejection, regeneration verification |
 | Pitch experiment leaks across layers | canonical pitch strategy distinct from visual pitch mapping strategy |
 | Specificity erased by convenient strategy defaults | discriminated wrappers and full-pipeline preservation suite |
@@ -308,17 +333,18 @@ A local browser control panel and live preview are deferred to a later sprint be
 |---|---|---|
 | R-001–R-003 | product evaluation protocol | workbench, learning, corpus-tools |
 | R-004–R-014 | schema, model, normalizer, pitch | validator, transposition, capability analysis |
-| R-015–R-019 | model, validator | pitch, projection, renderer-html |
+| R-015–R-019 | model, harmony, validator | pitch, projection, renderer-html |
 | R-020–R-025 | model, patterns, normalizer | learning, projection, layout |
 | R-026–R-034 | workbench, projection, layout, renderer-html | normalizer, learning |
 | R-035–R-041 | model, hint validator, projection | workbench, renderer-html |
 | R-042–R-046 | learning, workbench, corpus-tools, human protocol | test-fixtures |
 | R-047–R-050 | schema, workbench, CLI, all packages | future adapters |
+| R-051–R-058 | workbench, capabilities, learning, layout, experiment runner | schema, projection, renderer-html, human protocol |
 
 Detailed one-to-one mapping and amendment obligations are in `01_Product/TraceabilityMatrix.md`.
 
 ## 17. Architecture escalation status
 
-No Architecture Sprint 0.1 escalation gate is triggered.
+No Architecture Sprint 0.1 escalation gate remains triggered after the Product Owner correction pass.
 
-The interaction question is resolved as an architecture choice: CLI/declarative configuration and generated comparison output are sufficient for Sprint 1, while a browser adapter remains supported and deferred. Harmony, repetition, voicing, and familiar-shape behavior remain covered by contract tests or retained fixtures as specified in revised Sprint 1; no approved requirement is abandoned. No strategy or transformation is selected as a default.
+The required governance records D-025–D-029, R-051–R-058, and A-011 now exist. Capability evidence is artifact-scoped, chord quality is controlled and versioned, free-form harmonic analysis is explicitly non-authoritative, and E-007 accurately holds pitch mapping constant. CLI/declarative configuration and generated comparison output remain the Sprint 1 implementation choice subject to A-011 usability evidence; a browser adapter is supported and deferred. No strategy or transformation is selected as a default.
