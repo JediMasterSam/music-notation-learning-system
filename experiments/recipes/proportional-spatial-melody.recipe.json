@@ -1,0 +1,61 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "mnls.recipe.proportional-spatial-melody",
+  "version": "1.0.0",
+  "name": "Proportional horizontal melody",
+  "description": "Comparison treatment with proportional onset and duration extent.",
+  "status": "comparison",
+  "strategies": {
+    "timeMapping": {
+      "strategyId": "mnls.time.proportional",
+      "strategyVersion": "1",
+      "options": {}
+    },
+    "pitchMapping": {
+      "strategyId": "mnls.pitch.absolute-chromatic-y",
+      "strategyVersion": "1",
+      "options": {}
+    },
+    "durationEncoding": {
+      "strategyId": "mnls.duration.proportional-extent",
+      "strategyVersion": "1",
+      "options": {}
+    },
+    "pitchLabels": {
+      "strategyId": "mnls.labels.exact-pitch",
+      "strategyVersion": "1",
+      "options": {}
+    },
+    "structuralOverlays": [
+      {
+        "strategyId": "mnls.overlay.time-reference",
+        "strategyVersion": "1",
+        "options": {}
+      },
+      {
+        "strategyId": "mnls.overlay.learning-chunks",
+        "strategyVersion": "1",
+        "options": {}
+      }
+    ]
+  },
+  "visibility": {
+    "roleKinds": ["primary-line"],
+    "includeLearningPlan": true,
+    "includeHints": false
+  },
+  "accessibility": {
+    "includeExactPitch": true,
+    "includeExactTime": true,
+    "includeSourceOrderEvents": true
+  },
+  "renderer": {
+    "strategyId": "mnls.renderer.html-svg",
+    "strategyVersion": "1",
+    "options": {}
+  },
+  "limitationPolicy": { "acceptedClasses": [] },
+  "metadata": {
+    "comparisonRole": "Proportional temporal-reference treatment; no effectiveness claim"
+  }
+}

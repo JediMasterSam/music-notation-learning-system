@@ -6,7 +6,7 @@ import type {
   EnvironmentCapabilityProfile,
   RendererCapabilityProfile,
 } from "@mnls/capabilities";
-import { contentHash, type Arrangement, type CanonicalDocument } from "@mnls/model";
+import { addRational, contentHash, type Arrangement, type CanonicalDocument } from "@mnls/model";
 import { normalizedHash, type NormalizedArrangement } from "@mnls/normalizer";
 import { createBuiltInPitchRegistry, type PitchStrategyRegistry } from "@mnls/pitch";
 
@@ -45,6 +45,19 @@ function arrangementById(document: CanonicalDocument, id: string): Arrangement {
   const arrangement = document.arrangements.find((candidate) => candidate.id === id);
   if (!arrangement) throw new Error(`Validated document does not contain arrangement ${id}.`);
   return arrangement;
+}
+
+function gridRepresentable(
+  normalized: NormalizedArrangement,
+  subdivisionsPerBeat: number,
+): boolean {
+  return normalized.events.every(({ start, duration }) => {
+    const end = addRational(start, duration);
+    return (
+      (start.numerator * subdivisionsPerBeat) % start.denominator === 0 &&
+      (end.numerator * subdivisionsPerBeat) % end.denominator === 0
+    );
+  });
 }
 
 export function analyzeArrangementCapabilities(
@@ -96,6 +109,19 @@ export function analyzeArrangementCapabilities(
     return strategy?.pitchClass(semanticEvent.harmony.root).ok === true;
   });
 
+  const gridCapabilities = Array.from({ length: 16 }, (_, index) => index + 1)
+    .filter((subdivision) => gridRepresentable(normalized, subdivision))
+    .map((subdivision) =>
+      evidence(
+        `time.grid-subdivision.${subdivision}`,
+        "present",
+        "canonical-arrangement",
+        arrangement.id,
+        canonicalHash,
+        eventRefs,
+        `All exact event onsets and ends are representable at ${subdivision} subdivision(s) per beat.`,
+      ),
+    );
   const capabilities = [
     evidence(
       "time.exact-onset",
@@ -180,6 +206,7 @@ export function analyzeArrangementCapabilities(
       canonicalHash,
       pitchClassComparable.map(({ sourceEventId }) => sourceEventId),
     ),
+    ...gridCapabilities,
   ].sort((left, right) => left.capability.localeCompare(right.capability, "en"));
 
   return {
