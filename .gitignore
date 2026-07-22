@@ -1,2 +1,9 @@
 Agents/.DS_Store
 .DS_Store
+node_modules/
+dist/
+output/*
+!output/README.md
+learning/plans/*
+!learning/plans/README.md
+*.tsbuildinfo

@@ -1,0 +1,41 @@
+{
+  "name": "@mnls/root",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Experimental music-notation and learning workbench",
+  "type": "module",
+  "packageManager": "npm@11.16.0",
+  "engines": {
+    "node": "24.14.0",
+    "npm": "11.16.0"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint . --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:unit": "vitest run tests/unit packages --passWithNoTests",
+    "test:integration": "vitest run tests/integration --passWithNoTests",
+    "test:corpus": "vitest run tests/corpus --passWithNoTests",
+    "test:reproducibility": "vitest run tests/reproducibility --passWithNoTests",
+    "check:deps": "node scripts/check-dependencies.mjs",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run build && npm run check:deps && npm test && npm run test:corpus && npm run test:reproducibility"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.39.1",
+    "@types/node": "24.10.0",
+    "ajv": "8.20.0",
+    "eslint": "9.39.1",
+    "fast-check": "4.3.0",
+    "linkedom": "0.18.12",
+    "prettier": "3.6.2",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.47.0",
+    "vitest": "4.1.10"
+  }
+}
