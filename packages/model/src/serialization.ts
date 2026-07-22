@@ -21,6 +21,11 @@ export function contentHash(value: unknown): string {
   return `sha256:${createHash("sha256").update(canonicalStringify(value)).digest("hex")}`;
 }
 
+/** Hashes the exact UTF-8 bytes of a serialized text artifact. */
+export function textContentHash(value: string): string {
+  return `sha256:${createHash("sha256").update(value, "utf8").digest("hex")}`;
+}
+
 export function deepFreeze<T>(value: T): T {
   if (value !== null && typeof value === "object" && !Object.isFrozen(value)) {
     for (const child of Object.values(value)) deepFreeze(child);

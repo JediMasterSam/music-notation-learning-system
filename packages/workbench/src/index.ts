@@ -1,4 +1,12 @@
 export { StrategyCatalog } from "./catalog.js";
+export { createTreatmentArtifactBundle } from "./artifacts.js";
+export type {
+  TreatmentArtifactBundle,
+  TreatmentArtifactBundleInput,
+  TreatmentIdentityEvidence,
+  TreatmentManifest,
+  VersionedContentRef,
+} from "./artifacts.js";
 export type {
   CatalogResolution,
   LimitationDeclaration,

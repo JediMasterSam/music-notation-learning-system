@@ -84,7 +84,8 @@ function layoutSelections(input: LayoutInput): StageResult<ResolvedLayoutSelecti
   const duration = selection(input, "durationEncoding");
   const pitch = selection(input, "pitchMapping");
   const labels = selection(input, "pitchLabels");
-  if (!time || !duration || !pitch || !labels) {
+  const renderer = input.recipe.selections.find((candidate) => candidate.slot === "renderer");
+  if (!time || !duration || !pitch || !labels || !renderer) {
     return {
       ok: false,
       diagnostics: [
@@ -103,6 +104,7 @@ function layoutSelections(input: LayoutInput): StageResult<ResolvedLayoutSelecti
       pitch,
       labels,
       overlays: input.recipe.selections.filter(({ kind }) => kind === "structural-overlay"),
+      renderer,
     },
     diagnostics: [],
   };
@@ -614,10 +616,21 @@ export function layoutProjectedView(
     .sort((left, right) => left.localeCompare(right, "en"));
   const withoutHash: Omit<LayoutPlan, "layoutHash"> = {
     formatVersion: "0.1.0",
+    source: {
+      canonicalDocumentId: input.view.canonicalDocumentId,
+      arrangementId: input.view.arrangementId,
+      canonicalHash: input.view.canonicalHash,
+      normalizedHash: input.view.normalizedArrangementHash,
+    },
     viewId: input.view.viewId,
     recipeRef: input.recipe.recipeRef,
     treatment: input.recipe.authoredIdentity,
     strategyRefs,
+    rendererRef: {
+      id: selected.renderer.strategyId,
+      version: selected.renderer.strategyVersion,
+    },
+    rendererOptions: selected.renderer.options,
     extent: { width: layoutScalar(sceneWidth), height: layoutScalar(sceneHeight) },
     nodes,
     relationships: [...relationships].sort((left, right) =>

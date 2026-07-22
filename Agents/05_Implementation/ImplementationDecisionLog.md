@@ -74,3 +74,9 @@ This log records ordinary implementation choices made inside Architecture baseli
 - **Decision:** Store every layout coordinate as a normalized rational plus its deterministic `mnls.decimal@1` serialization; terminating decimals remain exact and non-terminating values use six-place half-up rounding.
 - **Reason:** Scene arithmetic and mathematical tests retain exact values while HTML/SVG serialization receives locale-independent pinned text with no browser floating-point or font-metric dependency.
 - **Scope:** Disposable layout/scene format `0.1.0`; canonical and projected artifacts contain no coordinates.
+
+## IDL-013 — Serialized artifact identity and DOM identifiers
+
+- **Decision:** Hash serialized text artifacts over their exact UTF-8 bytes, while retaining canonical JSON value hashes for semantic artifacts; encode every DOM ID source code point into a fixed hexadecimal identifier.
+- **Reason:** Output manifests must detect any byte change, and full code-point encoding makes deterministic SVG/HTML IDs injective without accepting user-controlled markup characters or colliding with literal escape-looking source text.
+- **Scope:** Derived treatment evidence and safe HTML/SVG serialization only; canonical identity and musical semantics are unchanged.

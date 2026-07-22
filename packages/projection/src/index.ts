@@ -78,6 +78,8 @@ export type ProjectedOverlay = ProjectedLearningChunkOverlay;
 
 export interface ProjectedView {
   readonly formatVersion: "0.1.0";
+  readonly canonicalDocumentId: string;
+  readonly canonicalHash: string;
   readonly arrangementId: string;
   readonly normalizedArrangementHash: string;
   readonly viewId: string;
@@ -384,6 +386,8 @@ export function projectView(input: ProjectionInput): StageResult<ProjectedView> 
   const provenanceIndex = Object.fromEntries(events.map(({ id, provenance }) => [id, provenance]));
   const withoutHash: Omit<ProjectedView, "projectionHash"> = {
     formatVersion: "0.1.0",
+    canonicalDocumentId: input.arrangement.canonicalDocumentId,
+    canonicalHash: input.arrangement.inputHash,
     arrangementId: input.arrangement.arrangementId,
     normalizedArrangementHash: normalizedHash(input.arrangement),
     viewId,

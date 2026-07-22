@@ -8,5 +8,5 @@ export {
   rationalToNumber,
   subtractRational,
 } from "./rational.js";
-export { canonicalStringify, contentHash, deepFreeze } from "./serialization.js";
+export { canonicalStringify, contentHash, deepFreeze, textContentHash } from "./serialization.js";
 export type * from "./types.js";

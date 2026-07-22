@@ -10,6 +10,7 @@ import {
   multiplyRational,
   rational,
   subtractRational,
+  textContentHash,
 } from "./index.js";
 
 describe("exact rational primitives", () => {
@@ -35,6 +36,8 @@ describe("canonical serialization", () => {
     expect(canonicalStringify(first)).toBe(canonicalStringify(second));
     expect(contentHash(first)).toBe(contentHash(second));
     expect(contentHash(first)).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(textContentHash(canonicalStringify(first))).toMatch(/^sha256:[a-f0-9]{64}$/);
+    expect(textContentHash("a")).not.toBe(textContentHash("a\n"));
   });
 
   it("deep-freezes canonical object graphs", () => {

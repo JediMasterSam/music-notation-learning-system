@@ -127,10 +127,18 @@ export interface AccessibilityPlan {
 
 export interface LayoutPlan {
   readonly formatVersion: "0.1.0";
+  readonly source: {
+    readonly canonicalDocumentId: string;
+    readonly arrangementId: string;
+    readonly canonicalHash: string;
+    readonly normalizedHash: string;
+  };
   readonly viewId: string;
   readonly recipeRef: ResolvedRecipe["recipeRef"];
   readonly treatment: ResolvedRecipe["authoredIdentity"];
   readonly strategyRefs: readonly string[];
+  readonly rendererRef: { readonly id: string; readonly version: string };
+  readonly rendererOptions: Readonly<Record<string, JSONValue>>;
   readonly extent: { readonly width: LayoutScalar; readonly height: LayoutScalar };
   readonly nodes: readonly SceneNode[];
   readonly relationships: readonly SceneRelationship[];
@@ -161,4 +169,5 @@ export interface ResolvedLayoutSelections {
   readonly pitch: ResolvedStrategySelection;
   readonly labels: ResolvedStrategySelection;
   readonly overlays: readonly ResolvedStrategySelection[];
+  readonly renderer: ResolvedStrategySelection;
 }

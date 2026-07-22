@@ -4,5 +4,19 @@
   "private": true,
   "type": "module",
   "exports": "./src/index.ts",
-  "types": "./src/index.ts"
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@mnls/layout": "0.1.0"
+  },
+  "devDependencies": {
+    "@mnls/capability-analysis": "0.1.0",
+    "@mnls/learning": "0.1.0",
+    "@mnls/model": "0.1.0",
+    "@mnls/normalizer": "0.1.0",
+    "@mnls/projection": "0.1.0",
+    "@mnls/test-fixtures": "0.1.0",
+    "@mnls/workbench": "0.1.0",
+    "fast-check": "4.3.0",
+    "htmlparser2": "10.1.0"
+  }
 }
