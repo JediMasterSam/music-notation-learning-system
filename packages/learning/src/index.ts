@@ -1,2 +1,5 @@
-/** Public boundary for @mnls/learning. */
-export {};
+export { LearningTransformationRegistry } from "./registry.js";
+export type {
+  LearningTransformationDescriptor,
+  LearningTransformationResolution,
+} from "./registry.js";

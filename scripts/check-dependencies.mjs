@@ -11,7 +11,7 @@ const allowed = {
   patterns: ["model", "pitch"],
   normalizer: ["model", "patterns", "validator"],
   transposition: ["model", "normalizer", "pitch"],
-  "capability-analysis": ["capabilities", "model", "normalizer"],
+  "capability-analysis": ["capabilities", "model", "normalizer", "pitch"],
   learning: ["capabilities", "model", "normalizer"],
   workbench: ["capabilities", "model", "schema"],
   projection: ["learning", "model", "normalizer", "workbench"],
