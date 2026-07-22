@@ -13,12 +13,15 @@ import {
   type HandName,
   type MeasureCoordinate,
   type MusicalEvent,
+  type MusicalIdea,
+  type MusicalRole,
   type ProvenanceChain,
   type Rational,
   type Section,
   type SpecificValue,
   type StageResult,
   type TimeSpan,
+  type Transition,
   type Variation,
 } from "@mnls/model";
 import { validateCanonicalSemantics } from "@mnls/validator";
@@ -46,7 +49,10 @@ export interface NormalizedArrangement {
   readonly arrangementId: string;
   readonly extent: TimeSpan;
   readonly measures: readonly MeasureCoordinate[];
+  readonly roles: readonly MusicalRole[];
   readonly sections: readonly Section[];
+  readonly ideas: readonly MusicalIdea[];
+  readonly transitions: readonly Transition[];
   readonly events: readonly NormalizedEvent[];
   readonly diagnostics: readonly Diagnostic[];
   readonly inputHash: string;
@@ -327,7 +333,10 @@ export function normalize(
     arrangementId,
     extent: arrangementExtent(arrangement, expanded.value),
     measures: arrangement.measures,
+    roles: arrangement.roles,
     sections: arrangement.sections,
+    ideas: arrangement.ideas,
+    transitions: arrangement.transitions ?? [],
     events: expanded.value,
     diagnostics: [],
     inputHash: beforeHash,

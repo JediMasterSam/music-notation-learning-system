@@ -62,3 +62,9 @@ This log records ordinary implementation choices made inside Architecture baseli
 - **Decision:** Arrangement analysis publishes evidence for each subdivision from 1 through 16 that exactly represents every normalized event onset and end; the resolved fixed-grid strategy adds the capability requirement matching its materialized subdivision option.
 - **Reason:** Grid compatibility depends on both artifact timing and the selected presentation option. Source-qualified dynamic requirements reject coarse grids before projection without giving the recipe authority to claim musical timing facts.
 - **Scope:** Sprint 1 fixed-grid options and arrangement evidence only; layout still performs exact arithmetic and fails rather than rounds.
+
+## IDL-011 — Normalized structural projection context
+
+- **Decision:** Carry canonical roles, musical ideas, and transitions into the immutable normalized artifact alongside sections and events.
+- **Reason:** Projection must apply role-kind visibility and resolve structural/learning selectors without re-reading canonical JSON or inferring meaning from IDs. These records remain derived references and contain no recipe, learning chunk, or layout data.
+- **Scope:** Normalized format `0.1.0`; the added structural context changes normalized and dependent plan hashes, so committed expected plans were regenerated.
