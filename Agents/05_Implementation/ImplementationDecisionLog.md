@@ -32,3 +32,9 @@ This log records ordinary implementation choices made inside Architecture baseli
 - **Decision:** Serialize `MusicalRole` records in `Arrangement.roles` so event, idea, and hand-assignment references have an authoritative arrangement-owned target.
 - **Reason:** The approved model defines `MusicalRole` and requires typed role references, but its abbreviated `Arrangement` listing omits the collection that owns them. Arrangement ownership preserves song/arrangement and role/hand boundaries.
 - **Scope:** Canonical schema/model completion; no new role kinds or learner vocabulary.
+
+## IDL-006 — Sprint 1 transposition spelling policy
+
+- **Decision:** `spelled-pitch@1` preserves authored spelling for identity transposition and uses a deterministic sharp-based spelling table for nonzero semitone transposition.
+- **Reason:** Sprint 1 requires semantic, reproducible transposition but does not approve a final enharmonic-spelling policy. The policy is encapsulated entirely inside the replaceable pitch strategy.
+- **Scope:** Experimental pitch strategy behavior only; it is not a learner-facing default or canonical pitch-model decision.

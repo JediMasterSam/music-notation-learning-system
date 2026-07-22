@@ -143,4 +143,20 @@ describe("semantic validation diagnostics", () => {
       validateCanonicalSemantics(changed).diagnostics,
     );
   });
+
+  it("rejects a familiar-shape hint falsely labeled exact", () => {
+    const document = mutatedFixture("contract-voicing-hints", (value) => {
+      const arrangement = (value.arrangements as Record<string, unknown>[])[0]!;
+      const event = (arrangement.events as Record<string, unknown>[])[0]!;
+      const hint = (event.hints as Record<string, unknown>[])[0]!;
+      hint.bass = {
+        strategy: "spelled-pitch",
+        version: "1",
+        value: { step: "G", alter: 0 },
+      };
+    });
+    const result = validateCanonicalSemantics(document);
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics.map(({ code }) => code)).toContain("HINT_EQUIVALENCE_FALSE_EXACT");
+  });
 });

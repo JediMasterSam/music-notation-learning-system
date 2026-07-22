@@ -7,7 +7,8 @@
   "types": "./src/index.ts",
   "dependencies": {
     "@mnls/harmony": "0.1.0",
-    "@mnls/model": "0.1.0"
+    "@mnls/model": "0.1.0",
+    "@mnls/pitch": "0.1.0"
   },
   "devDependencies": {
     "@mnls/schema": "0.1.0",

@@ -1,4 +1,5 @@
 import {
+  chordPitchClassSet,
   coreChordQualityVocabulary,
   isChordQualityAlias,
   resolveChordQuality,
@@ -13,10 +14,16 @@ import {
   type ChordAnalysis,
   type Diagnostic,
   type MusicalEvent,
+  type PitchEnvelope,
   type Rational,
   type StageResult,
   type TimeSpan,
 } from "@mnls/model";
+import {
+  createBuiltInPitchRegistry,
+  type PitchStrategyRegistry,
+  type PitchValueKind,
+} from "@mnls/pitch";
 
 function diagnostic(
   code: string,
@@ -119,11 +126,38 @@ function validateChordAnalysis(
   }
 }
 
+function validatePitch(
+  registry: PitchStrategyRegistry,
+  envelope: PitchEnvelope,
+  expectedKind: PitchValueKind,
+  pointer: string,
+  canonicalId: string,
+  diagnostics: Diagnostic[],
+): void {
+  const strategy = registry.resolve(envelope.strategy, envelope.version);
+  if (!strategy) {
+    diagnostics.push(
+      diagnostic(
+        "PITCH_STRATEGY_NOT_FOUND",
+        `Pitch strategy ${envelope.strategy}@${envelope.version} is not registered.`,
+        pointer,
+        ["R-006", "R-048", "R-050"],
+        canonicalId,
+      ),
+    );
+    return;
+  }
+  for (const pitchError of strategy.validate(envelope, expectedKind)) {
+    diagnostics.push({ ...pitchError, jsonPointer: pointer, canonicalId });
+  }
+}
+
 function validateEvent(
   event: MusicalEvent,
   pointer: string,
   roles: ReadonlySet<string>,
   arrangementEnd: Rational | undefined,
+  pitchRegistry: PitchStrategyRegistry,
   diagnostics: Diagnostic[],
 ): void {
   validateRational(event.start.beat, `${pointer}/start/beat`, diagnostics, { nonnegative: true });
@@ -160,8 +194,28 @@ function validateEvent(
     }
   }
 
-  if (event.type !== "chord") return;
+  if (event.type === "note") {
+    if ("value" in event.pitch) {
+      validatePitch(
+        pitchRegistry,
+        event.pitch.value,
+        "pitch",
+        `${pointer}/pitch/value`,
+        event.id,
+        diagnostics,
+      );
+    }
+    return;
+  }
   validateChordAnalysis(event.harmony, `${pointer}/harmony`, event.id, diagnostics);
+  validatePitch(
+    pitchRegistry,
+    event.harmony.root,
+    "pitch-class",
+    `${pointer}/harmony/root`,
+    event.id,
+    diagnostics,
+  );
 
   if (event.inversion && "value" in event.inversion && event.inversion.value.chordDegree < 1) {
     diagnostics.push(
@@ -187,6 +241,46 @@ function validateEvent(
     );
   }
 
+  if (event.slashBass && "value" in event.slashBass) {
+    validatePitch(
+      pitchRegistry,
+      event.slashBass.value,
+      "pitch-class",
+      `${pointer}/slashBass/value`,
+      event.id,
+      diagnostics,
+    );
+  }
+
+  if ("value" in event.voicing) {
+    const pitches = event.voicing.value.pitches;
+    if (pitches && "value" in pitches) {
+      for (const [pitchIndex, pitch] of pitches.value.entries()) {
+        validatePitch(
+          pitchRegistry,
+          pitch,
+          "pitch",
+          `${pointer}/voicing/value/pitches/value/${pitchIndex}`,
+          event.id,
+          diagnostics,
+        );
+      }
+    }
+    const pitchClasses = event.voicing.value.pitchClasses;
+    if (pitchClasses && "value" in pitchClasses) {
+      for (const [pitchIndex, pitch] of pitchClasses.value.entries()) {
+        validatePitch(
+          pitchRegistry,
+          pitch,
+          "pitch-class",
+          `${pointer}/voicing/value/pitchClasses/value/${pitchIndex}`,
+          event.id,
+          diagnostics,
+        );
+      }
+    }
+  }
+
   for (const [hintIndex, hint] of (event.hints ?? []).entries()) {
     validateChordAnalysis(
       hint.upperStructure,
@@ -194,6 +288,42 @@ function validateEvent(
       hint.id,
       diagnostics,
     );
+    validatePitch(
+      pitchRegistry,
+      hint.upperStructure.root,
+      "pitch-class",
+      `${pointer}/hints/${hintIndex}/upperStructure/root`,
+      hint.id,
+      diagnostics,
+    );
+    validatePitch(
+      pitchRegistry,
+      hint.bass,
+      "pitch-class",
+      `${pointer}/hints/${hintIndex}/bass`,
+      hint.id,
+      diagnostics,
+    );
+    if (hint.equivalence === "exact-pitch-class-set") {
+      const parentSet = chordPitchClassSet(event.harmony, pitchRegistry);
+      const upperSet = chordPitchClassSet(hint.upperStructure, pitchRegistry);
+      const bassStrategy = pitchRegistry.resolve(hint.bass.strategy, hint.bass.version);
+      const bass = bassStrategy?.pitchClass(hint.bass);
+      if (parentSet.ok && upperSet.ok && bass?.ok) {
+        const hintedSet = [...new Set([...upperSet.value, bass.value])].sort((a, b) => a - b);
+        if (JSON.stringify(parentSet.value) !== JSON.stringify(hintedSet)) {
+          diagnostics.push(
+            diagnostic(
+              "HINT_EQUIVALENCE_FALSE_EXACT",
+              "Familiar-shape hint labeled exact does not match the canonical chord pitch-class set.",
+              `${pointer}/hints/${hintIndex}/equivalence`,
+              ["R-036", "R-037", "R-040"],
+              hint.id,
+            ),
+          );
+        }
+      }
+    }
     if (hint.status === "suppressed" && (hint.suppressionReasons?.length ?? 0) === 0) {
       diagnostics.push(
         diagnostic(
@@ -212,6 +342,7 @@ function validateArrangement(
   arrangement: Arrangement,
   pointer: string,
   songId: string,
+  pitchRegistry: PitchStrategyRegistry,
   diagnostics: Diagnostic[],
 ): void {
   if (arrangement.songRef !== songId) {
@@ -235,7 +366,14 @@ function validateArrangement(
     validateRational(arrangementEnd, `${pointer}/duration/beats`, diagnostics, { positive: true });
 
   for (const [index, event] of arrangement.events.entries()) {
-    validateEvent(event, `${pointer}/events/${index}`, roles, arrangementEnd, diagnostics);
+    validateEvent(
+      event,
+      `${pointer}/events/${index}`,
+      roles,
+      arrangementEnd,
+      pitchRegistry,
+      diagnostics,
+    );
   }
 
   const sortedMeasures = arrangement.measures
@@ -399,6 +537,7 @@ function validateArrangement(
         `${pointer}/variations/${variationIndex}/operations/${operationIndex}/event`,
         roles,
         undefined,
+        pitchRegistry,
         diagnostics,
       );
     }
@@ -462,6 +601,7 @@ function collectIds(
 
 export function validateCanonicalSemantics(
   document: CanonicalDocument,
+  pitchRegistry: PitchStrategyRegistry = createBuiltInPitchRegistry(),
 ): StageResult<Readonly<CanonicalDocument>> {
   const diagnostics: Diagnostic[] = [];
   const ids = new Map<string, string>();
@@ -481,7 +621,13 @@ export function validateCanonicalSemantics(
   }
 
   for (const [index, arrangement] of document.arrangements.entries()) {
-    validateArrangement(arrangement, `/arrangements/${index}`, document.song.id, diagnostics);
+    validateArrangement(
+      arrangement,
+      `/arrangements/${index}`,
+      document.song.id,
+      pitchRegistry,
+      diagnostics,
+    );
   }
 
   for (const [sourceIndex, source] of (document.sourceRegister ?? []).entries()) {

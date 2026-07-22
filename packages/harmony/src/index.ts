@@ -1,4 +1,5 @@
 export {
+  chordPitchClassSet,
   coreChordQualityVocabulary,
   formatChordLabel,
   isChordQualityAlias,
