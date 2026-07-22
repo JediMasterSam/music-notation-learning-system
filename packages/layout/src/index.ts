@@ -25,5 +25,6 @@ export {
 } from "./engine.js";
 export { fixedBeatGridV1, gridSpanV1 } from "./fixed-grid.js";
 export { absoluteChromaticYV1 } from "./pitch.js";
+export { proportionalExtentV1, proportionalTimeV1 } from "./proportional.js";
 export { canonicalDecimal, layoutScalar } from "./scalar.js";
 export type { LayoutScalar } from "./scalar.js";

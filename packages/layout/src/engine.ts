@@ -31,6 +31,7 @@ import type {
 } from "./contracts.js";
 import { fixedBeatGridV1, gridSpanV1, integerOption } from "./fixed-grid.js";
 import { absoluteChromaticYV1 } from "./pitch.js";
+import { proportionalExtentV1, proportionalTimeV1 } from "./proportional.js";
 import { layoutScalar } from "./scalar.js";
 
 export const defaultLayoutEnvironment: LayoutEnvironment = Object.freeze({
@@ -46,8 +47,14 @@ function key(id: string, version: string): string {
 
 export function createSprint1LayoutRegistry(): LayoutStrategyRegistry {
   return {
-    time: new Map([[key(fixedBeatGridV1.id, fixedBeatGridV1.version), fixedBeatGridV1]]),
-    duration: new Map([[key(gridSpanV1.id, gridSpanV1.version), gridSpanV1]]),
+    time: new Map([
+      [key(fixedBeatGridV1.id, fixedBeatGridV1.version), fixedBeatGridV1],
+      [key(proportionalTimeV1.id, proportionalTimeV1.version), proportionalTimeV1],
+    ]),
+    duration: new Map([
+      [key(gridSpanV1.id, gridSpanV1.version), gridSpanV1],
+      [key(proportionalExtentV1.id, proportionalExtentV1.version), proportionalExtentV1],
+    ]),
     pitch: new Map([
       [key(absoluteChromaticYV1.id, absoluteChromaticYV1.version), absoluteChromaticYV1],
     ]),
@@ -367,6 +374,48 @@ function gridMarkers(
   return { ok: true, value: nodes, diagnostics: [] };
 }
 
+function proportionalTimeMarkers(
+  view: LayoutInput["view"],
+  selection: ResolvedStrategySelection,
+  time: TimeMappingStrategy,
+  environment: LayoutEnvironment,
+  sceneHeight: Rational,
+): StageResult<readonly SceneNode[]> {
+  const wholeBeats = Math.floor(
+    view.extent.duration.beats.numerator / view.extent.duration.beats.denominator,
+  );
+  const nodes: SceneNode[] = [];
+  for (let index = 0; index <= wholeBeats; index += 1) {
+    const semanticTime = addRational(view.extent.start.beat, rational(index));
+    const mapped = time.mapTime({
+      extentStart: view.extent.start.beat,
+      time: semanticTime,
+      environment,
+      options: selection.options,
+    });
+    if (!mapped.ok) return mapped;
+    const text = `Time reference ${rationalKey(semanticTime)} beats`;
+    nodes.push({
+      id: `scene.time-reference.${index}`,
+      kind: "time-marker",
+      semanticTime,
+      bounds: {
+        x: mapped.value.x,
+        y: layoutScalar(rational(0)),
+        width: layoutScalar(multiplyRational(rational(1), environment.scale)),
+        height: layoutScalar(sceneHeight),
+      },
+      text,
+      classes: ["time-marker", "time-reference-marker"],
+      sourceRefs: [],
+      provenanceRefs: [`time:${rationalKey(semanticTime)}`],
+      strategyRef: "mnls.overlay.time-reference@1",
+      aria: { label: text, description: `${text}; proportional temporal reference.` },
+    });
+  }
+  return { ok: true, value: nodes, diagnostics: [] };
+}
+
 function learningChunkNodes(
   input: LayoutInput,
   eventNodes: readonly SceneNode[],
@@ -521,6 +570,7 @@ export function layoutProjectedView(
   const overlayIds = new Set(selected.overlays.map(({ strategyId }) => strategyId));
   const supportedOverlayIds = new Set([
     "mnls.overlay.beat-subdivision",
+    "mnls.overlay.time-reference",
     "mnls.overlay.learning-chunks",
   ]);
   const unsupportedOverlay = [...overlayIds].find((id) => !supportedOverlayIds.has(id));
@@ -538,7 +588,9 @@ export function layoutProjectedView(
   }
   const markerNodes = overlayIds.has("mnls.overlay.beat-subdivision")
     ? gridMarkers(input.view, selected.time, time.value, environment, sceneHeight)
-    : { ok: true as const, value: [] as readonly SceneNode[], diagnostics: [] };
+    : overlayIds.has("mnls.overlay.time-reference")
+      ? proportionalTimeMarkers(input.view, selected.time, time.value, environment, sceneHeight)
+      : { ok: true as const, value: [] as readonly SceneNode[], diagnostics: [] };
   if (!markerNodes.ok) return markerNodes;
   const learning = overlayIds.has("mnls.overlay.learning-chunks")
     ? learningChunkNodes(input, eventNodes, environment)
