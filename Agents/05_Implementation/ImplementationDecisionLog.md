@@ -44,3 +44,15 @@ This log records ordinary implementation choices made inside Architecture baseli
 - **Decision:** Derive normalized event IDs from a SHA-256 hash of arrangement, canonical source, and placement path; order events by exact onset, canonical source ID, then derived ID.
 - **Reason:** This makes direct, repeated, and varied placements stable across runs without random identifiers or registry iteration order.
 - **Scope:** Disposable normalized format `0.1.0`; canonical IDs remain authoritative and begin every provenance chain.
+
+## IDL-008 — Learning-plan hash and verification boundary
+
+- **Decision:** Compute `planHash` over the complete canonicalized plan except the self-referential `planHash` field, and allow plan capabilities only from an in-process value returned by deterministic regeneration verification.
+- **Reason:** Excluding only the hash field gives a stable integrity calculation; the runtime verification token prevents a deserialized or hand-constructed plan from self-asserting verified-plan authority.
+- **Scope:** Derived learning-plan format and capability analysis only; canonical music remains unchanged.
+
+## IDL-009 — Explicit capability-profile schema variants
+
+- **Decision:** Represent arrangement, learning-plan, renderer, and environment capability profiles as separate JSON Schema union variants matching their public neutral TypeScript contracts.
+- **Reason:** Each authority has different identifying hashes and references. Explicit variants mechanically prevent a generic artifact profile from obscuring or forging that authority boundary.
+- **Scope:** Capability-profile schema `0.1.0`; no capability meaning or ownership changed.

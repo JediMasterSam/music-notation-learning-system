@@ -1,0 +1,5 @@
+{
+  "includedRoleKinds": ["primary-line"],
+  "includeTransitions": false,
+  "order": "canonical-time"
+}

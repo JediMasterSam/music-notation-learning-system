@@ -1,0 +1,102 @@
+{
+  "arrangementRef": {
+    "contentHash": "sha256:f19ccd2c015ddba3cea499387f62abe20a65596584dbd5b77a78e9ea9fac2f44",
+    "id": "arrangement.melody-learning-b",
+    "version": "0.1.0"
+  },
+  "chunks": [
+    {
+      "id": "chunk.1f4c29a3c5b8ab569a70f671",
+      "provenance": {
+        "ruleId": "idea-boundary",
+        "sourceRefs": [
+          "event.melody-learning-b.1",
+          "event.melody-learning-b.2",
+          "event.melody-learning-b.3",
+          "idea.melody-learning-b.call"
+        ],
+        "sourceSpans": [
+          {
+            "duration": { "beats": { "denominator": 1, "numerator": 2 } },
+            "start": { "beat": { "denominator": 1, "numerator": 0 } }
+          }
+        ],
+        "transformationRef": {
+          "contentHash": "sha256:df371239cbf6dcda7f597fae7a441ebaa724c74d57d945f9fc898323499d3255",
+          "id": "mnls.learning.idea-boundary.sprint-1",
+          "version": "1.0.0"
+        }
+      },
+      "selectors": [
+        { "ref": "idea.melody-learning-b.call", "type": "canonical-ref" },
+        {
+          "span": {
+            "duration": { "beats": { "denominator": 1, "numerator": 2 } },
+            "start": { "beat": { "denominator": 1, "numerator": 0 } }
+          },
+          "type": "time-span"
+        }
+      ]
+    },
+    {
+      "id": "chunk.9fda80a1f3f2283148231bdd",
+      "provenance": {
+        "ruleId": "idea-boundary",
+        "sourceRefs": ["event.melody-learning-b.4", "idea.melody-learning-b.response"],
+        "sourceSpans": [
+          {
+            "duration": { "beats": { "denominator": 1, "numerator": 2 } },
+            "start": { "beat": { "denominator": 1, "numerator": 2 } }
+          }
+        ],
+        "transformationRef": {
+          "contentHash": "sha256:df371239cbf6dcda7f597fae7a441ebaa724c74d57d945f9fc898323499d3255",
+          "id": "mnls.learning.idea-boundary.sprint-1",
+          "version": "1.0.0"
+        }
+      },
+      "selectors": [
+        { "ref": "idea.melody-learning-b.response", "type": "canonical-ref" },
+        {
+          "span": {
+            "duration": { "beats": { "denominator": 1, "numerator": 2 } },
+            "start": { "beat": { "denominator": 1, "numerator": 2 } }
+          },
+          "type": "time-span"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [],
+  "formatVersion": "0.1.0",
+  "id": "plan.6b3b378b2691c4f06a93b6f7",
+  "normalizedArrangementHash": "sha256:f0b7c241f5fa4717438f24b40f614c8da9969c58fc126f0926281c1957b8a0f1",
+  "planHash": "sha256:ca73dcae7c45c9cfdea080fc3be0863b4585a1b9e23a617bb8157a09339d0794",
+  "provenance": {
+    "arrangementHash": "sha256:f19ccd2c015ddba3cea499387f62abe20a65596584dbd5b77a78e9ea9fac2f44",
+    "arrangementId": "arrangement.melody-learning-b",
+    "definitionHash": "sha256:df371239cbf6dcda7f597fae7a441ebaa724c74d57d945f9fc898323499d3255",
+    "executorVersion": "0.1.0",
+    "normalizedHash": "sha256:f0b7c241f5fa4717438f24b40f614c8da9969c58fc126f0926281c1957b8a0f1",
+    "parameterHash": "sha256:12744c7454e505aabe7231c1751de9f058acef952c71415e0a5345af54a80768",
+    "transformationId": "mnls.learning.idea-boundary",
+    "transformationVersion": "1"
+  },
+  "relationships": [
+    {
+      "fromChunkId": "chunk.1f4c29a3c5b8ab569a70f671",
+      "toChunkId": "chunk.9fda80a1f3f2283148231bdd",
+      "type": "precedes"
+    }
+  ],
+  "transformationParameters": {
+    "includedRoleKinds": ["primary-line"],
+    "includeTransitions": false,
+    "order": "canonical-time"
+  },
+  "transformationRef": {
+    "contentHash": "sha256:df371239cbf6dcda7f597fae7a441ebaa724c74d57d945f9fc898323499d3255",
+    "id": "mnls.learning.idea-boundary.sprint-1",
+    "version": "1.0.0"
+  }
+}

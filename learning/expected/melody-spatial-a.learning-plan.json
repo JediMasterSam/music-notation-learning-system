@@ -1,0 +1,107 @@
+{
+  "arrangementRef": {
+    "contentHash": "sha256:2a196eb8fd53daf4284485d6147cbd3276c8d2e8fd2c9f6058ffef1903e0f3ce",
+    "id": "arrangement.melody-spatial-a",
+    "version": "0.1.0"
+  },
+  "chunks": [
+    {
+      "id": "chunk.11cfbab7a5207129a0984a85",
+      "provenance": {
+        "ruleId": "idea-boundary",
+        "sourceRefs": [
+          "event.melody-spatial-a.1",
+          "event.melody-spatial-a.2",
+          "event.melody-spatial-a.3",
+          "idea.melody-spatial-a.opening"
+        ],
+        "sourceSpans": [
+          {
+            "duration": { "beats": { "denominator": 1, "numerator": 2 } },
+            "start": { "beat": { "denominator": 1, "numerator": 0 } }
+          }
+        ],
+        "transformationRef": {
+          "contentHash": "sha256:df371239cbf6dcda7f597fae7a441ebaa724c74d57d945f9fc898323499d3255",
+          "id": "mnls.learning.idea-boundary.sprint-1",
+          "version": "1.0.0"
+        }
+      },
+      "selectors": [
+        { "ref": "idea.melody-spatial-a.opening", "type": "canonical-ref" },
+        {
+          "span": {
+            "duration": { "beats": { "denominator": 1, "numerator": 2 } },
+            "start": { "beat": { "denominator": 1, "numerator": 0 } }
+          },
+          "type": "time-span"
+        }
+      ]
+    },
+    {
+      "id": "chunk.147667f508c40a26b8f7c7ec",
+      "provenance": {
+        "ruleId": "idea-boundary",
+        "sourceRefs": [
+          "event.melody-spatial-a.4",
+          "event.melody-spatial-a.5",
+          "event.melody-spatial-a.6",
+          "idea.melody-spatial-a.answer"
+        ],
+        "sourceSpans": [
+          {
+            "duration": { "beats": { "denominator": 1, "numerator": 3 } },
+            "start": { "beat": { "denominator": 1, "numerator": 2 } }
+          }
+        ],
+        "transformationRef": {
+          "contentHash": "sha256:df371239cbf6dcda7f597fae7a441ebaa724c74d57d945f9fc898323499d3255",
+          "id": "mnls.learning.idea-boundary.sprint-1",
+          "version": "1.0.0"
+        }
+      },
+      "selectors": [
+        { "ref": "idea.melody-spatial-a.answer", "type": "canonical-ref" },
+        {
+          "span": {
+            "duration": { "beats": { "denominator": 1, "numerator": 3 } },
+            "start": { "beat": { "denominator": 1, "numerator": 2 } }
+          },
+          "type": "time-span"
+        }
+      ]
+    }
+  ],
+  "diagnostics": [],
+  "formatVersion": "0.1.0",
+  "id": "plan.e348188a229ec0a053fa5799",
+  "normalizedArrangementHash": "sha256:b56437ff1afacd9674dc71309745f95283f7016c18d228892e8df2fcbd83fb63",
+  "planHash": "sha256:9f42a1007f066b910ec5ccb0b57d3ed1ba9f617dfa4bb8c4b9756ecc0211659c",
+  "provenance": {
+    "arrangementHash": "sha256:2a196eb8fd53daf4284485d6147cbd3276c8d2e8fd2c9f6058ffef1903e0f3ce",
+    "arrangementId": "arrangement.melody-spatial-a",
+    "definitionHash": "sha256:df371239cbf6dcda7f597fae7a441ebaa724c74d57d945f9fc898323499d3255",
+    "executorVersion": "0.1.0",
+    "normalizedHash": "sha256:b56437ff1afacd9674dc71309745f95283f7016c18d228892e8df2fcbd83fb63",
+    "parameterHash": "sha256:12744c7454e505aabe7231c1751de9f058acef952c71415e0a5345af54a80768",
+    "transformationId": "mnls.learning.idea-boundary",
+    "transformationVersion": "1"
+  },
+  "relationships": [
+    {
+      "fromChunkId": "chunk.11cfbab7a5207129a0984a85",
+      "toChunkId": "chunk.147667f508c40a26b8f7c7ec",
+      "type": "precedes"
+    }
+  ],
+  "transformationParameters": {
+    "includedRoleKinds": ["primary-line"],
+    "includeTransitions": false,
+    "order": "canonical-time"
+  },
+  "transformationRef": {
+    "contentHash": "sha256:df371239cbf6dcda7f597fae7a441ebaa724c74d57d945f9fc898323499d3255",
+    "id": "mnls.learning.idea-boundary.sprint-1",
+    "version": "1.0.0"
+  }
+}

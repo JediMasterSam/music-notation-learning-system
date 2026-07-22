@@ -78,6 +78,8 @@ describe("artifact-scoped capability analysis", () => {
     expect(environment.capabilities.every(({ source }) => source.authority === "environment")).toBe(
       true,
     );
+    expect(validateArtifact(schemaIds.capabilityProfile, renderer).ok).toBe(true);
+    expect(validateArtifact(schemaIds.capabilityProfile, environment).ok).toBe(true);
     expect(canonicalStringify(renderer)).toBe(
       canonicalStringify(
         analyzeRendererCapabilities({

@@ -1,0 +1,26 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "mnls.learning.idea-boundary.sprint-1",
+  "version": "1.0.0",
+  "name": "Idea-boundary Sprint 1 comparison transformation",
+  "status": "experimental",
+  "supportedArrangementCapabilities": [
+    {
+      "source": "arrangement",
+      "capability": "structure.musical-ideas",
+      "acceptedStates": ["present"]
+    }
+  ],
+  "parameterSchemaRef": "mnls.learning.idea-boundary.parameters@1",
+  "implementationRef": {
+    "transformationId": "mnls.learning.idea-boundary",
+    "transformationVersion": "1"
+  },
+  "ruleConfiguration": {
+    "purpose": "Create one derived practice chunk per selected canonical musical idea"
+  },
+  "outputContractVersion": "0.1.0",
+  "metadata": {
+    "limitation": "Experimental comparison strategy; not an approved or preferred learning method"
+  }
+}
