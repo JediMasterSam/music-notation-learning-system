@@ -276,6 +276,25 @@ export interface Diagnostic {
   readonly detail?: Readonly<Record<string, JSONValue>>;
 }
 
+export interface ProvenanceStep {
+  readonly kind:
+    | "canonical"
+    | "reference"
+    | "pattern"
+    | "override"
+    | "repetition"
+    | "variation"
+    | "transposition"
+    | "projection";
+  readonly sourceId: StableId;
+  readonly detail?: string;
+  readonly operationIndex?: number;
+}
+
+export interface ProvenanceChain {
+  readonly steps: readonly ProvenanceStep[];
+}
+
 export type StageResult<T> =
   | { readonly ok: true; readonly value: T; readonly diagnostics: readonly Diagnostic[] }
   | { readonly ok: false; readonly diagnostics: readonly Diagnostic[] };

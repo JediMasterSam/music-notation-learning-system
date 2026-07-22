@@ -38,3 +38,9 @@ This log records ordinary implementation choices made inside Architecture baseli
 - **Decision:** `spelled-pitch@1` preserves authored spelling for identity transposition and uses a deterministic sharp-based spelling table for nonzero semitone transposition.
 - **Reason:** Sprint 1 requires semantic, reproducible transposition but does not approve a final enharmonic-spelling policy. The policy is encapsulated entirely inside the replaceable pitch strategy.
 - **Scope:** Experimental pitch strategy behavior only; it is not a learner-facing default or canonical pitch-model decision.
+
+## IDL-007 — Normalized derived identity and ordering
+
+- **Decision:** Derive normalized event IDs from a SHA-256 hash of arrangement, canonical source, and placement path; order events by exact onset, canonical source ID, then derived ID.
+- **Reason:** This makes direct, repeated, and varied placements stable across runs without random identifiers or registry iteration order.
+- **Scope:** Disposable normalized format `0.1.0`; canonical IDs remain authoritative and begin every provenance chain.
