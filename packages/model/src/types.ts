@@ -44,9 +44,26 @@ export interface PitchEnvelope<TValue extends JSONValue = JSONValue> {
 export type MusicalRoleKind = "harmony" | "bass" | "accompaniment" | "primary-line" | "rhythm";
 export type HandName = "left" | "right" | "both" | "either";
 
+export interface LyricEvent {
+  readonly id: StableId;
+  readonly text: string;
+  readonly start?: TimePosition;
+  readonly duration?: Duration;
+  readonly anchorEventRef?: StableId;
+  readonly syllabic?: "single" | "begin" | "middle" | "end";
+  readonly verse?: number;
+}
+
+export interface LyricTrack {
+  readonly id: StableId;
+  readonly language?: string;
+  readonly events: readonly LyricEvent[];
+}
+
 export interface Song {
   readonly id: StableId;
   readonly title: string;
+  readonly lyricTracks?: readonly LyricTrack[];
   readonly metadata?: JSONValue;
 }
 
@@ -93,6 +110,7 @@ export interface Section {
   readonly order: number;
   readonly ideaRefs: readonly StableId[];
   readonly transitionRefs?: readonly StableId[];
+  readonly lyricTrackRefs?: readonly StableId[];
 }
 
 export interface MusicalIdea {

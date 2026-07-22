@@ -128,6 +128,12 @@ describe("music CLI command surface", () => {
     expect(JSON.parse(await readFile(transposedPath, "utf8"))).toMatchObject({
       id: "document.melody-spatial-a",
     });
+    const describeHarness = harness();
+    expect(
+      await runCli(["strategy", "describe", "mnls.time.proportional@1"], describeHarness.io),
+    ).toBe(0);
+    expect(describeHarness.stdout.join("")).toContain('"unitsPerBeat"');
+    expect(describeHarness.stdout.join("")).toContain('"default": 96');
     expect(canonicalStringify(JSON.parse(await readFile(generatedPlanPath, "utf8")))).toBe(
       canonicalStringify(JSON.parse(await readFile(planPath, "utf8"))),
     );

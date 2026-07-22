@@ -123,3 +123,22 @@ H-01–H-12 are retained only to link the approved Sprint 0.1 handoff to stable 
 ## Unresolved architecture blockers
 
 None after this correction pass. A-001–A-011 remain assumptions with explicit treatment; none has been promoted silently to a product decision.
+
+## Sprint 1 implementation evidence index
+
+Status: Added by Implementation Sprint 1; this section records evidence and does not amend approved product semantics.
+
+| Scope | Implementation evidence |
+|---|---|
+| R-001–R-010 | canonical/schema/model/validator/normalizer/projection/learning tests; four lawful fixtures; `tests/integration/specificity-pipeline.test.ts` |
+| R-011–R-024 | exact rational time, harmony, structure, provenance, pattern, transposition, and learning-plan package tests; H-C and C-D regressions |
+| R-025 | lyric track/event schema and semantic validation in `packages/schema` and `packages/validator`; AT-012 hostile-text, anchoring, transposition, and whitespace tests |
+| R-026–R-041 | recipe, capability, compatibility, projection, layout, renderer, role, hand, hint, and full-pipeline tests; both committed recipes |
+| R-042–R-050 | reusable learning transformation, corpus/source policy, observation separation, version/hash, renderer safety, and pitch strategy conformance tests |
+| R-051–R-058 | committed E-007 definition, two treatment bundles, CLI reproduction, `tests/reproducibility/experiment.test.ts`, and implementation report A-011 section |
+| AT-001–AT-022 | Individual disposition and concrete evidence in `Agents/05_Implementation/Sprint1CoverageReport.md` |
+| C-G01–C-G11 | Machine report from `music corpus test` and coverage report category table |
+| WP-01–WP-14 | Focused commits and gate results in `Agents/05_Implementation/ImplementationSprint1Report.md` |
+| Deviations | `Agents/05_Implementation/Sprint1DeviationLog.md`; DEV-001 only, no product or architecture deviation |
+
+The automated `tests/corpus/traceability.test.ts` fails if any approved requirement, acceptance test, corpus category, work package, report, usability-evidence field, or deviation disposition disappears from these records.

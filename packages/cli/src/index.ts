@@ -22,6 +22,7 @@ import { transposeCanonicalDocument } from "@mnls/transposition";
 import { validateCanonicalSemantics } from "@mnls/validator";
 import {
   createExperimentRunManifest,
+  describeBuiltInStrategy,
   listBuiltInStrategies,
   validateExperimentDefinition,
   validateRepresentationRecipe,
@@ -658,13 +659,17 @@ async function strategyCommand(args: readonly string[], io: CliIO): Promise<void
   }
   if (operation === "describe") {
     const reference = required(args[1], "music strategy describe <strategy-id>@<version>");
-    const strategy = strategies.find(({ id, version }) => `${id}@${version}` === reference);
-    if (!strategy) {
-      throw new CliFailure([
-        diagnostic("STRATEGY_NOT_FOUND", `Pinned strategy ${reference} is unavailable.`),
-      ]);
-    }
-    await emit(strategy, undefined, io);
+    const separator = reference.lastIndexOf("@");
+    const description = describeBuiltInStrategy(
+      reference.slice(0, separator),
+      reference.slice(separator + 1),
+    );
+    if (!description.ok) throw new CliFailure(description.diagnostics);
+    await emit(
+      { ...description.descriptor, optionSchema: description.optionSchema },
+      undefined,
+      io,
+    );
     return;
   }
   throw new CliFailure([

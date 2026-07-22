@@ -551,6 +551,15 @@ function collectIds(
     { id: document.id, pointer: "/id" },
     { id: document.song.id, pointer: "/song/id" },
   ];
+  for (const [trackIndex, track] of (document.song.lyricTracks ?? []).entries()) {
+    values.push({ id: track.id, pointer: `/song/lyricTracks/${trackIndex}/id` });
+    for (const [eventIndex, event] of track.events.entries()) {
+      values.push({
+        id: event.id,
+        pointer: `/song/lyricTracks/${trackIndex}/events/${eventIndex}/id`,
+      });
+    }
+  }
   for (const [arrangementIndex, arrangement] of document.arrangements.entries()) {
     const prefix = `/arrangements/${arrangementIndex}`;
     values.push({ id: arrangement.id, pointer: `${prefix}/id` });
@@ -620,6 +629,83 @@ export function validateCanonicalSemantics(
     } else ids.set(entry.id, entry.pointer);
   }
 
+  const musicalEventIds = new Set(
+    document.arrangements.flatMap((arrangement) => arrangement.events.map(({ id }) => id)),
+  );
+  const lyricTrackIds = new Set((document.song.lyricTracks ?? []).map(({ id }) => id));
+  for (const [trackIndex, track] of (document.song.lyricTracks ?? []).entries()) {
+    for (const [eventIndex, event] of track.events.entries()) {
+      const pointer = `/song/lyricTracks/${trackIndex}/events/${eventIndex}`;
+      const hasStart = event.start !== undefined;
+      const hasDuration = event.duration !== undefined;
+      if ((!hasStart || !hasDuration) && !event.anchorEventRef) {
+        diagnostics.push(
+          diagnostic(
+            "LYRIC_ANCHOR_REQUIRED",
+            "A lyric event requires a complete time span or a canonical event anchor.",
+            pointer,
+            ["R-025"],
+            event.id,
+          ),
+        );
+      }
+      if (hasStart !== hasDuration) {
+        diagnostics.push(
+          diagnostic(
+            "LYRIC_TIME_SPAN_INCOMPLETE",
+            "A lyric time span requires both start and duration.",
+            pointer,
+            ["R-025"],
+            event.id,
+          ),
+        );
+      }
+      if (event.start) {
+        validateRational(event.start.beat, `${pointer}/start/beat`, diagnostics, {
+          nonnegative: true,
+        });
+      }
+      if (event.duration) {
+        validateRational(event.duration.beats, `${pointer}/duration/beats`, diagnostics, {
+          positive: true,
+        });
+      }
+      if (event.anchorEventRef && !musicalEventIds.has(event.anchorEventRef)) {
+        diagnostics.push(
+          diagnostic(
+            "LYRIC_EVENT_REF_NOT_FOUND",
+            `Lyric anchor ${event.anchorEventRef} does not resolve to a canonical event.`,
+            `${pointer}/anchorEventRef`,
+            ["R-025"],
+            event.id,
+          ),
+        );
+      }
+      if (event.verse !== undefined && (!Number.isInteger(event.verse) || event.verse < 1)) {
+        diagnostics.push(
+          diagnostic(
+            "LYRIC_VERSE_INVALID",
+            "Lyric verse numbers must be positive integers.",
+            `${pointer}/verse`,
+            ["R-025"],
+            event.id,
+          ),
+        );
+      }
+      if (event.text !== event.text.trimStart()) {
+        diagnostics.push(
+          diagnostic(
+            "LYRIC_WHITESPACE_PADDING",
+            "Lyric placement must use time or event anchors, not leading whitespace.",
+            `${pointer}/text`,
+            ["R-025"],
+            event.id,
+          ),
+        );
+      }
+    }
+  }
+
   for (const [index, arrangement] of document.arrangements.entries()) {
     validateArrangement(
       arrangement,
@@ -628,6 +714,21 @@ export function validateCanonicalSemantics(
       pitchRegistry,
       diagnostics,
     );
+    for (const [sectionIndex, section] of arrangement.sections.entries()) {
+      for (const [referenceIndex, reference] of (section.lyricTrackRefs ?? []).entries()) {
+        if (!lyricTrackIds.has(reference)) {
+          diagnostics.push(
+            diagnostic(
+              "SECTION_LYRIC_TRACK_REF_NOT_FOUND",
+              `Section lyric track ${reference} does not resolve in the song.`,
+              `/arrangements/${index}/sections/${sectionIndex}/lyricTrackRefs/${referenceIndex}`,
+              ["R-020", "R-025"],
+              section.id,
+            ),
+          );
+        }
+      }
+    }
   }
 
   for (const [sourceIndex, source] of (document.sourceRegister ?? []).entries()) {

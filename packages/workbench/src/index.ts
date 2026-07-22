@@ -36,5 +36,9 @@ export type {
   ResolvedStrategySelection,
   StrategySelection,
 } from "./recipe.js";
-export { createBuiltInStrategyCatalog, listBuiltInStrategies } from "./strategies.js";
+export {
+  createBuiltInStrategyCatalog,
+  describeBuiltInStrategy,
+  listBuiltInStrategies,
+} from "./strategies.js";
 export type { RepresentationStrategyImplementation } from "./strategies.js";

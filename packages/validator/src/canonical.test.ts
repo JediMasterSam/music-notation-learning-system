@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { contentHash, type CanonicalDocument, type ChordEvent } from "@mnls/model";
 import { schemaIds, validateArtifact } from "@mnls/schema";
 import { fixtureNames, loadFixture } from "@mnls/test-fixtures";
+import { transposeCanonicalDocument } from "@mnls/transposition";
 
 import { validateCanonicalSemantics } from "./index.js";
 
@@ -62,6 +63,56 @@ describe("Sprint 1 canonical fixtures", () => {
     expect(am7.hints?.[0]?.equivalence).toBe("exact-pitch-class-set");
     expect(slashChord.inversion?.state).toBe("intentionally-unspecified");
     expect(slashChord.voicing.state).toBe("intentionally-unspecified");
+  });
+
+  it("anchors plain untrusted lyric text without whitespace positioning", () => {
+    const source = typedFixture("melody-spatial-a");
+    const withLyrics: CanonicalDocument = {
+      ...source,
+      song: {
+        ...source.song,
+        lyricTracks: [
+          {
+            id: "lyrics.melody-spatial-a.english",
+            language: "en",
+            events: [
+              {
+                id: "lyric.melody-spatial-a.1",
+                text: '<script onload="unsafe">plain text</script>',
+                anchorEventRef: "event.melody-spatial-a.1",
+                syllabic: "single",
+                verse: 1,
+              },
+              {
+                id: "lyric.melody-spatial-a.2",
+                text: "timed",
+                start: { beat: { numerator: 1, denominator: 2 } },
+                duration: { beats: { numerator: 1, denominator: 2 } },
+              },
+            ],
+          },
+        ],
+      },
+      arrangements: source.arrangements.map((arrangement, index) =>
+        index === 0
+          ? {
+              ...arrangement,
+              sections: arrangement.sections.map((section, sectionIndex) =>
+                sectionIndex === 0
+                  ? { ...section, lyricTrackRefs: ["lyrics.melody-spatial-a.english"] }
+                  : section,
+              ),
+            }
+          : arrangement,
+      ),
+    };
+    expect(validateArtifact(schemaIds.canonical, withLyrics).ok).toBe(true);
+    expect(validateCanonicalSemantics(withLyrics).ok).toBe(true);
+    const transposed = transposeCanonicalDocument(withLyrics, { semitones: 2 });
+    expect(transposed.ok).toBe(true);
+    if (transposed.ok) {
+      expect(transposed.value.document.song.lyricTracks).toEqual(withLyrics.song.lyricTracks);
+    }
   });
 });
 
@@ -158,5 +209,48 @@ describe("semantic validation diagnostics", () => {
     const result = validateCanonicalSemantics(document);
     expect(result.ok).toBe(false);
     expect(result.diagnostics.map(({ code }) => code)).toContain("HINT_EQUIVALENCE_FALSE_EXACT");
+  });
+
+  it("rejects unanchored lyrics, bad event refs, and whitespace placement", () => {
+    const source = typedFixture("melody-spatial-a");
+    const invalid: CanonicalDocument = {
+      ...source,
+      song: {
+        ...source.song,
+        lyricTracks: [
+          {
+            id: "lyrics.invalid",
+            events: [
+              { id: "lyric.unanchored", text: "no anchor" },
+              {
+                id: "lyric.missing-ref",
+                text: " bad padding",
+                anchorEventRef: "event.missing",
+              },
+            ],
+          },
+        ],
+      },
+      arrangements: source.arrangements.map((arrangement, index) =>
+        index === 0
+          ? {
+              ...arrangement,
+              sections: arrangement.sections.map((section, sectionIndex) =>
+                sectionIndex === 0 ? { ...section, lyricTrackRefs: ["lyrics.missing"] } : section,
+              ),
+            }
+          : arrangement,
+      ),
+    };
+    const result = validateCanonicalSemantics(invalid);
+    expect(result.ok).toBe(false);
+    expect(result.diagnostics.map(({ code }) => code)).toEqual(
+      expect.arrayContaining([
+        "LYRIC_ANCHOR_REQUIRED",
+        "LYRIC_EVENT_REF_NOT_FOUND",
+        "LYRIC_WHITESPACE_PADDING",
+        "SECTION_LYRIC_TRACK_REF_NOT_FOUND",
+      ]),
+    );
   });
 });

@@ -298,3 +298,14 @@ export function createBuiltInStrategyCatalog(): StrategyCatalog<RepresentationSt
 export function listBuiltInStrategies(): readonly StrategyDescriptor[] {
   return createBuiltInStrategyCatalog().list();
 }
+
+export function describeBuiltInStrategy(id: string, version: string) {
+  const resolution = createBuiltInStrategyCatalog().resolve(id, version);
+  return resolution.ok
+    ? {
+        ok: true as const,
+        descriptor: resolution.descriptor,
+        optionSchema: resolution.implementation.optionSchema,
+      }
+    : resolution;
+}

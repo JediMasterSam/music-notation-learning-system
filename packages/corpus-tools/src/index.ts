@@ -27,6 +27,16 @@ export interface CorpusTestReport {
   readonly status: "pass" | "fail";
   readonly fixtures: readonly CorpusFixtureEvidence[];
   readonly categoryCoverage: readonly CorpusCategoryEvidence[];
+  readonly coverage: {
+    readonly requirements: readonly string[];
+    readonly architectureDecisions: readonly string[];
+    readonly handoffObligations: readonly string[];
+    readonly recipes: readonly string[];
+    readonly strategies: readonly string[];
+    readonly transformations: readonly string[];
+    readonly deferredFunctionalRendering: readonly string[];
+  };
+  readonly sourcePolicy: "pass" | "fail";
   readonly diagnostics: readonly Diagnostic[];
 }
 
@@ -163,6 +173,68 @@ export function runCorpusTest(inputs: readonly CorpusFixtureInput[]): CorpusTest
     status: diagnostics.length === 0 && fixtures.length === inputs.length ? "pass" : "fail",
     fixtures,
     categoryCoverage,
+    coverage: {
+      requirements: [
+        "R-004",
+        "R-007",
+        "R-011",
+        "R-013",
+        "R-015",
+        "R-023",
+        "R-030",
+        "R-043",
+        "R-045",
+        "R-052",
+        "R-053",
+        "R-054",
+        "R-055",
+        "R-056",
+        "R-057",
+        "R-058",
+      ],
+      architectureDecisions: [
+        "ADR-011",
+        "ADR-012",
+        "ADR-014",
+        "ADR-015",
+        "ADR-016",
+        "ADR-017",
+        "ADR-018",
+      ],
+      handoffObligations: [
+        "same-source-multiple-treatments",
+        "derived-learning-plans",
+        "artifact-scoped-capabilities",
+        "deterministic-run-evidence",
+        "human-observations-separate",
+      ],
+      recipes: ["mnls.recipe.explicit-grid@1.0.0", "mnls.recipe.proportional-spatial-melody@1.0.0"],
+      strategies: [
+        "mnls.time.fixed-beat-grid@1",
+        "mnls.time.proportional@1",
+        "mnls.duration.grid-span@1",
+        "mnls.duration.proportional-extent@1",
+        "mnls.pitch.absolute-chromatic-y@1",
+        "mnls.labels.exact-pitch@1",
+        "mnls.overlay.beat-subdivision@1",
+        "mnls.overlay.time-reference@1",
+        "mnls.overlay.learning-chunks@1",
+        "mnls.renderer.html-svg@1",
+      ],
+      transformations: ["mnls.learning.idea-boundary@1"],
+      deferredFunctionalRendering: [
+        "harmonic-roadmap",
+        "role-and-hand-isolation-ui",
+        "broad-lyrics",
+        "familiar-shape-hint-visualization",
+        "additional-visual-pitch-mappings",
+      ],
+    },
+    sourcePolicy:
+      fixtures.length === inputs.length &&
+      fixtures.every(({ lawfulSourceRecords }) => lawfulSourceRecords > 0)
+        ? "pass"
+        : "fail",
     diagnostics,
   };
 }
