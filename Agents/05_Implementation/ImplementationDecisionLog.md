@@ -80,3 +80,9 @@ This log records ordinary implementation choices made inside Architecture baseli
 - **Decision:** Hash serialized text artifacts over their exact UTF-8 bytes, while retaining canonical JSON value hashes for semantic artifacts; encode every DOM ID source code point into a fixed hexadecimal identifier.
 - **Reason:** Output manifests must detect any byte change, and full code-point encoding makes deterministic SVG/HTML IDs injective without accepting user-controlled markup characters or colliding with literal escape-looking source text.
 - **Scope:** Derived treatment evidence and safe HTML/SVG serialization only; canonical identity and musical semantics are unchanged.
+
+## IDL-014 — Runnable CLI bundle
+
+- **Decision:** Keep the strict TypeScript workspace build as the package/conformance artifact and additionally bundle the CLI composition root into one Node-targeted ESM file with pinned Rolldown `1.1.5`.
+- **Reason:** TypeScript preserves workspace aliases and the source-oriented package exports used by tests, which are not directly runnable by Node after a root `outDir` build. A single deterministic adapter bundle makes the installed `music` binary executable without changing package dependency directions or introducing a runtime loader.
+- **Scope:** CLI delivery only; domain packages remain independently typed public boundaries, and no browser framework or plugin loader is added.

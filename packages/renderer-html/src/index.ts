@@ -10,6 +10,8 @@ export interface RenderDiagnostic {
 export interface RenderedTreatment {
   readonly html: string;
   readonly title: string;
+  readonly status: LayoutPlan["treatment"]["status"];
+  readonly limitations: LayoutPlan["limitations"];
   readonly layoutHash: string;
   readonly recipeRef: LayoutPlan["recipeRef"];
   readonly rendererRef: LayoutPlan["rendererRef"];
@@ -270,6 +272,8 @@ ${renderDetails(plan)}
     value: {
       html,
       title,
+      status: plan.treatment.status,
+      limitations: plan.limitations,
       layoutHash: plan.layoutHash,
       recipeRef: plan.recipeRef,
       rendererRef: plan.rendererRef,
@@ -297,10 +301,13 @@ export function renderComparisonPage(
     };
   }
   const items = treatments
-    .map(
-      ({ href, rendered }) =>
-        `<li><h2>${escapeHtml(rendered.title)}</h2><p>Recipe <code>${escapeHtml(rendered.recipeRef.id)}@${escapeHtml(rendered.recipeRef.version)}</code></p><a href="${escapeHtml(href)}">Open treatment</a></li>`,
-    )
+    .map(({ href, rendered }) => {
+      const limitations =
+        rendered.limitations.length === 0
+          ? "No acknowledged compatibility limitations."
+          : rendered.limitations.map(({ message }) => message).join("; ");
+      return `<li><h2>${escapeHtml(rendered.title)}</h2><p>Status: ${escapeHtml(rendered.status)}</p><p>Recipe <code>${escapeHtml(rendered.recipeRef.id)}@${escapeHtml(rendered.recipeRef.version)}</code></p><p>${escapeHtml(limitations)}</p><a href="${escapeHtml(href)}">Open treatment</a></li>`;
+    })
     .join("");
   return {
     ok: true,

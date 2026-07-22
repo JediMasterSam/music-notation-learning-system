@@ -1,0 +1,97 @@
+{
+  "formatVersion": "0.1.0",
+  "id": "mnls.experiment.spatial-melody-comparison",
+  "version": "1.0.0",
+  "fixtureRefs": [
+    {
+      "id": "document.melody-spatial-a",
+      "version": "0.1.0",
+      "contentHash": "sha256:2a196eb8fd53daf4284485d6147cbd3276c8d2e8fd2c9f6058ffef1903e0f3ce"
+    }
+  ],
+  "treatmentRefs": [
+    {
+      "id": "mnls.recipe.explicit-grid",
+      "version": "1.0.0",
+      "contentHash": "sha256:ea4e1b8965be21d69a3a8fb912f7144aefd6e18f2c1326e1957a127e8d681c32"
+    },
+    {
+      "id": "mnls.recipe.proportional-spatial-melody",
+      "version": "1.0.0",
+      "contentHash": "sha256:b7881768f0ba5b360ad940626c10d2fc310de7f08ed819bad9d5de99ba31a772"
+    }
+  ],
+  "learningTransformationRefs": [
+    {
+      "id": "mnls.learning.idea-boundary.sprint-1",
+      "version": "1.0.0",
+      "contentHash": "sha256:df371239cbf6dcda7f597fae7a441ebaa724c74d57d945f9fc898323499d3255"
+    }
+  ],
+  "researchQuestion": "How does proportional horizontal onset and duration compare with an explicit beat and subdivision grid while the canonical melody and absolute-chromatic vertical pitch mapping are held constant?",
+  "controlledVariables": [
+    {
+      "id": "canonical-normalized-source",
+      "description": "Use the pinned M-A canonical document and its deterministic normalized arrangement in both treatments."
+    },
+    {
+      "id": "vertical-pitch-mapping",
+      "description": "Use mnls.pitch.absolute-chromatic-y@1 with identical materialized options in both treatments."
+    },
+    {
+      "id": "exact-pitch-labels",
+      "description": "Use mnls.labels.exact-pitch@1 and retain exact pitch text in both treatments."
+    },
+    {
+      "id": "accessibility-data",
+      "description": "Expose exact pitch, onset, duration, source order, specificity, and provenance in both treatments."
+    },
+    {
+      "id": "renderer-environment-policy",
+      "description": "Use mnls.renderer.html-svg@1, comparison-wide layout, en locale, and mnls.decimal@1 rounding in both treatments."
+    },
+    {
+      "id": "learning-overlay",
+      "description": "Use the same verified idea-boundary@1 learning plan overlay in both treatments."
+    }
+  ],
+  "changedVariables": [
+    {
+      "id": "time-mapping",
+      "description": "Compare fixed beat/subdivision cells with proportional horizontal onset."
+    },
+    {
+      "id": "duration-encoding",
+      "description": "Compare exact grid spans with proportional horizontal duration extent."
+    },
+    {
+      "id": "temporal-reference-overlay",
+      "description": "Compare beat/subdivision guides with proportional time-reference guides."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "locate-event-onsets",
+      "description": "Locate the onset of each source-order melody event in both treatments."
+    },
+    {
+      "id": "compare-event-durations",
+      "description": "Read and compare the three exact melody durations in both treatments."
+    },
+    {
+      "id": "follow-pitch-contour",
+      "description": "Follow repeated, stepwise, and larger pitch movements while vertical mapping remains controlled."
+    }
+  ],
+  "observations": [
+    {
+      "id": "temporal-reference-clarity",
+      "description": "Record human comments about locating onset and duration; automated execution does not populate this field."
+    },
+    {
+      "id": "source-identity-comprehension",
+      "description": "Record whether a reviewer understands that both pages derive from one source; automated execution does not populate this field."
+    }
+  ],
+  "status": "ready"
+}

@@ -13,7 +13,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && rolldown packages/cli/src/bin.ts --file dist/music.js --format esm --platform node --sourcemap",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
@@ -34,6 +34,7 @@
     "fast-check": "4.3.0",
     "linkedom": "0.18.12",
     "prettier": "3.6.2",
+    "rolldown": "1.1.5",
     "typescript": "5.9.3",
     "typescript-eslint": "8.47.0",
     "vitest": "4.1.10"

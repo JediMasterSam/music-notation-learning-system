@@ -1,12 +1,21 @@
 export { StrategyCatalog } from "./catalog.js";
-export { createTreatmentArtifactBundle } from "./artifacts.js";
+export { createExperimentRunManifest, createTreatmentArtifactBundle } from "./artifacts.js";
 export type {
+  ExperimentRunManifestInput,
+  ExperimentRunManifest,
+  ExperimentTreatmentEvidence,
   TreatmentArtifactBundle,
   TreatmentArtifactBundleInput,
   TreatmentIdentityEvidence,
   TreatmentManifest,
   VersionedContentRef,
 } from "./artifacts.js";
+export { validateExperimentDefinition } from "./experiment.js";
+export type {
+  ExperimentDefinition,
+  ExperimentNamedText,
+  ExperimentVariable,
+} from "./experiment.js";
 export type {
   CatalogResolution,
   LimitationDeclaration,
